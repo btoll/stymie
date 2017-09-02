@@ -13,6 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+/*
+TODO
+- 'export HISTIGNORE="stymie *:$HISTIGNORE"\n'
+- remove .stymie.d dir on error
+*/
+
 package cmd
 
 import (
@@ -24,9 +30,9 @@ import (
 )
 
 type GPGConfig struct {
-	Armor     bool
-	Sign      bool
-	Recipient string
+	Armor     bool   `json:"armor"`
+	Sign      bool   `json:"sign"`
+	Recipient string `json:"recipient"`
 }
 
 type StymieConfig struct {
@@ -36,7 +42,7 @@ type StymieConfig struct {
 
 type Task struct {
 	Msg string
-	Run func(done chan bool)
+	Run func()
 }
 
 func getStymieConfig(c *StymieConfig) {
@@ -45,10 +51,7 @@ func getStymieConfig(c *StymieConfig) {
 
 		fmt.Print("Enter the full path of the directory to install .stymie.d [~/.stymie.d]: ")
 		fmt.Scanf("%s", &s)
-		if s == "" {
-			//            inputs[2] = os.Getenv("HOME") + ".stymie.d"
-			c.Dir = "stymie.d"
-		} else {
+		if s != "" {
 			c.Dir = s
 		}
 
@@ -88,13 +91,11 @@ func getStymieConfig(c *StymieConfig) {
 	}
 }
 
-func makeDir(dir string, done chan bool) {
+func makeDir(dir string) {
 	os.Mkdir(dir, 0700)
-	done <- true
 }
 
-func createConfigFile(c *StymieConfig, done chan bool) {
-	// Create config file.
+func createConfigFile(c *StymieConfig) {
 	f, err := os.Create(c.Dir + "/c")
 	defer f.Close()
 
@@ -117,9 +118,25 @@ func createConfigFile(c *StymieConfig, done chan bool) {
 		return
 	}
 
-	done <- true
 	//		        return util.encrypt(JSON.stringify(gpgOptions, null, 4))
 	//		        .then(writeFile(`${stymieDir}/c`))
+}
+
+func createListFile(c *StymieConfig) {
+	f, err := os.Create(c.Dir + "/k")
+	defer f.Close()
+
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		return
+	}
+
+	f.WriteString("{}")
+
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		return
+	}
 }
 
 // initCmd represents the init command
@@ -140,28 +157,30 @@ to quickly create a Cobra application.`,
 
 		getStymieConfig(&c)
 
-		done := make(chan bool)
-
 		tasks := []Task{
 			{
 				Msg: "Creating project directory " + c.Dir,
-				Run: func(done chan bool) {
-					makeDir(c.Dir, done)
+				Run: func() {
+					makeDir(c.Dir)
 				},
 			},
 			{
 				Msg: "Creating stymie config file",
-				Run: func(done chan bool) {
-					createConfigFile(&c, done)
-					done <- true
+				Run: func() {
+					createConfigFile(&c)
+				},
+			},
+			{
+				Msg: "Creating stymie key file",
+				Run: func() {
+					createListFile(&c)
 				},
 			},
 		}
 
 		for _, task := range tasks {
 			fmt.Println(task.Msg)
-			go task.Run(done)
-			<-done
+			task.Run()
 		}
 	},
 }
