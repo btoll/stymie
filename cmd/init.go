@@ -25,6 +25,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/spf13/cobra"
 )
@@ -35,17 +36,16 @@ type GPGConfig struct {
 	Recipient string `json:"recipient"`
 }
 
-type StymieConfig struct {
+type Stymie struct {
 	Dir string
 	*GPGConfig
 }
 
 type Task struct {
-	Msg string
 	Run func()
 }
 
-func getStymieConfig(c *StymieConfig) {
+func (c *Stymie) getConfig() {
 	for {
 		var s string
 
@@ -95,7 +95,7 @@ func makeDir(dir string) {
 	os.Mkdir(dir, 0700)
 }
 
-func createConfigFile(c *StymieConfig) {
+func (c *Stymie) makeConfigFile(wg *sync.WaitGroup) {
 	f, err := os.Create(c.Dir + "/c")
 	defer f.Close()
 
@@ -120,9 +120,11 @@ func createConfigFile(c *StymieConfig) {
 
 	//		        return util.encrypt(JSON.stringify(gpgOptions, null, 4))
 	//		        .then(writeFile(`${stymieDir}/c`))
+	fmt.Println("Created stymie config file")
+	wg.Done()
 }
 
-func createListFile(c *StymieConfig) {
+func (c *Stymie) makeKeyFile(wg *sync.WaitGroup) {
 	f, err := os.Create(c.Dir + "/k")
 	defer f.Close()
 
@@ -137,6 +139,9 @@ func createListFile(c *StymieConfig) {
 		fmt.Printf("%v\n", err)
 		return
 	}
+
+	fmt.Println("Created stymie key file")
+	wg.Done()
 }
 
 // initCmd represents the init command
@@ -150,38 +155,36 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		c := StymieConfig{
-			Dir:       os.Getenv("HOME"),
+		var wg sync.WaitGroup
+
+		stymie := &Stymie{
+			Dir:       os.Getenv("HOME") + "/.stymie.d",
 			GPGConfig: &GPGConfig{},
 		}
 
-		getStymieConfig(&c)
+		stymie.getConfig()
 
-		tasks := []Task{
-			{
-				Msg: "Creating project directory " + c.Dir,
-				Run: func() {
-					makeDir(c.Dir)
-				},
+		tasks := []Task{{
+			Run: func() {
+				stymie.makeConfigFile(&wg)
 			},
-			{
-				Msg: "Creating stymie config file",
-				Run: func() {
-					createConfigFile(&c)
-				},
+		}, {
+			Run: func() {
+				stymie.makeKeyFile(&wg)
 			},
-			{
-				Msg: "Creating stymie key file",
-				Run: func() {
-					createListFile(&c)
-				},
-			},
-		}
+		}}
+
+		fmt.Printf("Creating project directory %s\n", stymie.Dir)
+		makeDir(stymie.Dir)
 
 		for _, task := range tasks {
-			fmt.Println(task.Msg)
-			task.Run()
+			wg.Add(1)
+			go task.Run()
 		}
+
+		wg.Wait()
+
+		fmt.Println("Installation complete")
 	},
 }
 
