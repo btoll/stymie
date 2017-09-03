@@ -15,6 +15,7 @@
 
 /*
 TODO
+- error handling
 - 'export HISTIGNORE="stymie *:$HISTIGNORE"\n'
 - remove .stymie.d dir on error
 */
@@ -24,7 +25,10 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"os/exec"
+	"strings"
 	"sync"
 
 	"github.com/spf13/cobra"
@@ -43,6 +47,21 @@ type Stymie struct {
 
 type Task struct {
 	Run func()
+}
+
+// Implement `Stringer` interface.
+func (gpg *GPGConfig) String() string {
+	args := []string{"-r", gpg.Recipient}
+
+	if gpg.Armor {
+		args = append(args, "-a")
+	}
+
+	if gpg.Sign {
+		args = append(args, "-s")
+	}
+
+	return strings.Join(args, " ")
 }
 
 func (c *Stymie) getConfig() {
@@ -91,10 +110,6 @@ func (c *Stymie) getConfig() {
 	}
 }
 
-func makeDir(dir string) {
-	os.Mkdir(dir, 0700)
-}
-
 func (c *Stymie) makeConfigFile(wg *sync.WaitGroup) {
 	f, err := os.Create(c.Dir + "/c")
 	defer f.Close()
@@ -104,6 +119,8 @@ func (c *Stymie) makeConfigFile(wg *sync.WaitGroup) {
 		return
 	}
 
+	fmt.Println("config", c)
+
 	b, err := json.Marshal(c.GPGConfig)
 
 	if err != nil {
@@ -111,17 +128,19 @@ func (c *Stymie) makeConfigFile(wg *sync.WaitGroup) {
 		return
 	}
 
-	f.Write(b)
+	f.Write(c.spawn(string(b)))
 
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		return
 	}
 
-	//		        return util.encrypt(JSON.stringify(gpgOptions, null, 4))
-	//		        .then(writeFile(`${stymieDir}/c`))
 	fmt.Println("Created stymie config file")
 	wg.Done()
+}
+
+func makeDir(dir string) {
+	os.Mkdir(dir, 0700)
 }
 
 func (c *Stymie) makeKeyFile(wg *sync.WaitGroup) {
@@ -142,6 +161,23 @@ func (c *Stymie) makeKeyFile(wg *sync.WaitGroup) {
 
 	fmt.Println("Created stymie key file")
 	wg.Done()
+}
+
+func (c *Stymie) spawn(s string) []byte {
+	// Gather the args from the GPGConfig struct to send to the `gpg` binary.
+	cmd := fmt.Sprintf("gpg %s -e", c)
+	gpgCmd := exec.Command("bash", "-c", cmd)
+	gpgIn, _ := gpgCmd.StdinPipe()
+	gpgOut, _ := gpgCmd.StdoutPipe()
+
+	gpgCmd.Start()
+	gpgIn.Write([]byte(s))
+	gpgIn.Close()
+
+	gpgBytes, _ := ioutil.ReadAll(gpgOut)
+	gpgCmd.Wait()
+
+	return gpgBytes
 }
 
 // initCmd represents the init command
