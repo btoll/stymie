@@ -16,6 +16,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
@@ -33,18 +34,19 @@ var addCmd = &cobra.Command{
 	//This application is a tool to generate the needed files
 	//to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		stymie := &Stymie{
-			Dir:  GetStymieDir(),
-			GPG:  &GPGConfig{},
-			Keys: nil,
-		}
+		stymie := &Stymie{}
 
-		b, err := ioutil.ReadFile(stymie.Dir + "/k")
+		b, err := ioutil.ReadFile(GetStymieDir() + "/k")
 		CheckError(err)
 
 		// TODO: Error checking.
-		json := string(stymie.Decrypt(b))
-		fmt.Println(json)
+		bjson := stymie.Decrypt(b)
+
+		// Fill the `stymie` struct with the decrypted json.
+		json.Unmarshal(bjson, stymie)
+
+		fmt.Println("stymie.Dir", stymie.Dir)
+		fmt.Println("stymie.GPG", stymie.GPG)
 	},
 }
 

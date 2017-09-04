@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 type GPGConfig struct {
@@ -53,10 +54,37 @@ func (c *Stymie) Decrypt(b []byte) []byte {
 
 func (c *Stymie) Encrypt(b []byte) []byte {
 	// Gather the args from the GPG struct to send to the `gpg` binary.
-	cmd := fmt.Sprintf("gpg %s -e", c.GPG)
+	args := []string{"-r", c.GPG.Recipient}
+
+	if c.GPG.Armor {
+		args = append(args, "-a")
+	}
+
+	if c.GPG.Sign {
+		args = append(args, "-s")
+	}
+
+	cmd := fmt.Sprintf("gpg %s -e", strings.Join(args, " "))
+	fmt.Println("cmd", cmd)
+
 	return spawnGPG(cmd, b)
 }
 
 func GetStymieDir() string {
 	return os.Getenv("HOME") + "/.stymie.d"
 }
+
+// Implement `Stringer` interface.
+//func (gpg *GPGConfig) String() string {
+//	args := []string{"-r", gpg.Recipient}
+//
+//	if gpg.Armor {
+//		args = append(args, "-a")
+//	}
+//
+//	if gpg.Sign {
+//		args = append(args, "-s")
+//	}
+//
+//	return strings.Join(args, " ")
+//}

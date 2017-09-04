@@ -27,25 +27,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
-
-// Implement `Stringer` interface.
-func (gpg *GPGConfig) String() string {
-	args := []string{"-r", gpg.Recipient}
-
-	if gpg.Armor {
-		args = append(args, "-a")
-	}
-
-	if gpg.Sign {
-		args = append(args, "-s")
-	}
-
-	return strings.Join(args, " ")
-}
 
 func (c *Stymie) getConfig() {
 	for {
@@ -103,9 +87,9 @@ func (c *Stymie) makeConfigFile() {
 	CheckError(err)
 
 	// Stuff the gpgConfig into the json.
-	json := fmt.Sprintf("{ \"dir\": \"%s\", \"gpg\": %s, \"keys\": {} }", c.Dir, string(b))
+	d := fmt.Sprintf("{ \"dir\": \"%s\", \"gpg\": %s, \"keys\": {} }", c.Dir, string(b))
 
-	f.Write(c.Encrypt([]byte(json)))
+	f.Write(c.Encrypt([]byte(d)))
 
 	CheckError(err)
 }
