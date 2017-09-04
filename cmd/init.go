@@ -29,7 +29,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"sync"
 
 	"github.com/spf13/cobra"
 )
@@ -110,8 +109,8 @@ func (c *Stymie) getConfig() {
 	}
 }
 
-func (c *Stymie) makeConfigFile(wg *sync.WaitGroup) {
-	f, err := os.Create(c.Dir + "/c")
+func (c *Stymie) makeConfigFile() {
+	f, err := os.Create(c.Dir + "/k")
 	defer f.Close()
 
 	if err != nil {
@@ -128,42 +127,22 @@ func (c *Stymie) makeConfigFile(wg *sync.WaitGroup) {
 		return
 	}
 
-	f.Write(c.spawn(string(b)))
+	// Stuff the gpgConfig into the json.
+	json := fmt.Sprintf("{ \"gpg\": %s, \"keys\": {} }", string(b))
+
+	f.Write(c.encrypt(json))
 
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		return
 	}
-
-	fmt.Println("Created stymie config file")
-	wg.Done()
 }
 
-func makeDir(dir string) {
-	os.Mkdir(dir, 0700)
+func (c *Stymie) makeDir() {
+	os.Mkdir(c.Dir, 0700)
 }
 
-func (c *Stymie) makeKeyFile(wg *sync.WaitGroup) {
-	f, err := os.Create(c.Dir + "/k")
-	defer f.Close()
-
-	if err != nil {
-		fmt.Printf("%v\n", err)
-		return
-	}
-
-	f.WriteString("{}")
-
-	if err != nil {
-		fmt.Printf("%v\n", err)
-		return
-	}
-
-	fmt.Println("Created stymie key file")
-	wg.Done()
-}
-
-func (c *Stymie) spawn(s string) []byte {
+func (c *Stymie) encrypt(s string) []byte {
 	// Gather the args from the GPGConfig struct to send to the `gpg` binary.
 	cmd := fmt.Sprintf("gpg %s -e", c)
 	gpgCmd := exec.Command("bash", "-c", cmd)
@@ -191,8 +170,6 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var wg sync.WaitGroup
-
 		stymie := &Stymie{
 			Dir:       os.Getenv("HOME") + "/.stymie.d",
 			GPGConfig: &GPGConfig{},
@@ -200,25 +177,11 @@ to quickly create a Cobra application.`,
 
 		stymie.getConfig()
 
-		tasks := []Task{{
-			Run: func() {
-				stymie.makeConfigFile(&wg)
-			},
-		}, {
-			Run: func() {
-				stymie.makeKeyFile(&wg)
-			},
-		}}
-
 		fmt.Printf("Creating project directory %s\n", stymie.Dir)
-		makeDir(stymie.Dir)
+		stymie.makeDir()
 
-		for _, task := range tasks {
-			wg.Add(1)
-			go task.Run()
-		}
-
-		wg.Wait()
+		fmt.Println("Creating stymie config file")
+		stymie.makeConfigFile()
 
 		fmt.Println("Installation complete")
 	},
