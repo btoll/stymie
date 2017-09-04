@@ -15,8 +15,9 @@
 
 /*
 TODO
-- error handling
 - 'export HISTIGNORE="stymie *:$HISTIGNORE"\n'
+- allow .stymie.d to be installed anywhere and even change the name
+- if not accepting default stymie location, get full pathname to put in Dir field
 - remove .stymie.d dir on error
 */
 
@@ -25,28 +26,11 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/spf13/cobra"
 )
-
-type GPGConfig struct {
-	Armor     bool   `json:"armor"`
-	Sign      bool   `json:"sign"`
-	Recipient string `json:"recipient"`
-}
-
-type Stymie struct {
-	Dir string
-	*GPGConfig
-}
-
-type Task struct {
-	Run func()
-}
 
 // Implement `Stringer` interface.
 func (gpg *GPGConfig) String() string {
@@ -78,7 +62,7 @@ func (c *Stymie) getConfig() {
 			if _, err := fmt.Scanf("%s", &s); err != nil {
 				fmt.Println("Cannot be blank!!")
 			} else {
-				c.Recipient = s
+				c.GPG.Recipient = s
 				break
 			}
 		}
@@ -89,9 +73,9 @@ func (c *Stymie) getConfig() {
 		case "n":
 			fallthrough
 		case "N":
-			c.Armor = true
+			c.GPG.Armor = true
 		default:
-			c.Armor = false
+			c.GPG.Armor = false
 		}
 
 		fmt.Print("Should GPG/PGP also sign the password files? (Recommended) [Y/n]: ")
@@ -100,9 +84,9 @@ func (c *Stymie) getConfig() {
 		case "n":
 			fallthrough
 		case "N":
-			c.Sign = false
+			c.GPG.Sign = false
 		default:
-			c.Sign = true
+			c.GPG.Sign = true
 		}
 
 		return
@@ -112,51 +96,22 @@ func (c *Stymie) getConfig() {
 func (c *Stymie) makeConfigFile() {
 	f, err := os.Create(c.Dir + "/k")
 	defer f.Close()
+	CheckError(err)
 
-	if err != nil {
-		fmt.Printf("%v\n", err)
-		return
-	}
+	b, err := json.Marshal(c.GPG)
 
-	fmt.Println("config", c)
-
-	b, err := json.Marshal(c.GPGConfig)
-
-	if err != nil {
-		fmt.Printf("%v\n", err)
-		return
-	}
+	CheckError(err)
 
 	// Stuff the gpgConfig into the json.
-	json := fmt.Sprintf("{ \"gpg\": %s, \"keys\": {} }", string(b))
+	json := fmt.Sprintf("{ \"dir\": \"%s\", \"gpg\": %s, \"keys\": {} }", c.Dir, string(b))
 
-	f.Write(c.encrypt(json))
+	f.Write(c.Encrypt([]byte(json)))
 
-	if err != nil {
-		fmt.Printf("%v\n", err)
-		return
-	}
+	CheckError(err)
 }
 
 func (c *Stymie) makeDir() {
 	os.Mkdir(c.Dir, 0700)
-}
-
-func (c *Stymie) encrypt(s string) []byte {
-	// Gather the args from the GPGConfig struct to send to the `gpg` binary.
-	cmd := fmt.Sprintf("gpg %s -e", c)
-	gpgCmd := exec.Command("bash", "-c", cmd)
-	gpgIn, _ := gpgCmd.StdinPipe()
-	gpgOut, _ := gpgCmd.StdoutPipe()
-
-	gpgCmd.Start()
-	gpgIn.Write([]byte(s))
-	gpgIn.Close()
-
-	gpgBytes, _ := ioutil.ReadAll(gpgOut)
-	gpgCmd.Wait()
-
-	return gpgBytes
 }
 
 // initCmd represents the init command
@@ -171,8 +126,9 @@ var initCmd = &cobra.Command{
 	//to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		stymie := &Stymie{
-			Dir:       os.Getenv("HOME") + "/.stymie.d",
-			GPGConfig: &GPGConfig{},
+			Dir:  GetStymieDir(),
+			GPG:  &GPGConfig{},
+			Keys: nil, // TODO
 		}
 
 		stymie.getConfig()
