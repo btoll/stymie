@@ -23,6 +23,39 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func (k *Key) getFields() {
+	for {
+		var s string
+
+		fmt.Print("URL: ")
+		_, err := fmt.Scanf("%s", &s)
+		CheckError(err)
+		k.URL = s
+
+		for {
+			fmt.Print("Username: ")
+			if _, err := fmt.Scanf("%s", &s); err != nil {
+				fmt.Println("Cannot be blank!!")
+			} else {
+				k.Username = s
+				break
+			}
+		}
+
+		for {
+			fmt.Print("Password: ")
+			if _, err := fmt.Scanf("%s", &s); err != nil {
+				fmt.Println("Cannot be blank!!")
+			} else {
+				k.Password = s
+				break
+			}
+		}
+
+		return
+	}
+}
+
 // addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add",
@@ -34,19 +67,45 @@ var addCmd = &cobra.Command{
 	//This application is a tool to generate the needed files
 	//to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		stymie := &Stymie{}
+		if len(args) == 0 {
+			fmt.Println("No key name provided, aborting.")
+			return
+		}
 
-		b, err := ioutil.ReadFile(GetStymieDir() + "/k")
+		stymie := &Stymie{}
+		keyfile := GetKeyFile()
+
+		b, err := ioutil.ReadFile(keyfile)
 		CheckError(err)
 
 		// TODO: Error checking.
-		bjson := stymie.Decrypt(b)
+		decrypted := stymie.Decrypt(b)
 
 		// Fill the `stymie` struct with the decrypted json.
-		json.Unmarshal(bjson, stymie)
+		err = json.Unmarshal(decrypted, stymie)
+		CheckError(err)
 
-		fmt.Println("stymie.Dir", stymie.Dir)
-		fmt.Println("stymie.GPG", stymie.GPG)
+		newkey := args[0]
+
+		if _, ok := stymie.Keys[newkey]; !ok {
+			k := &Key{}
+			k.getFields()
+
+			// Add the new key => struct.
+			stymie.Keys[newkey] = k
+
+			// Back to json (maybe combine this with the actual encryption?).
+			byt, err := json.Marshal(stymie)
+			CheckError(err)
+
+			// TODO: Error checking.
+			encrypted := stymie.Encrypt(byt)
+
+			err = ioutil.WriteFile(keyfile, encrypted, 0700)
+			CheckError(err)
+		} else {
+			fmt.Println("Key already exists, exiting.")
+		}
 	},
 }
 

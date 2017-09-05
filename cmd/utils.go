@@ -14,10 +14,16 @@ type GPGConfig struct {
 	Recipient string `json:"recipient"`
 }
 
+type Key struct {
+	URL      string `json:"url"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type Stymie struct {
-	Dir  string                 `json:"dir"`
-	GPG  *GPGConfig             `json:"gpg"`
-	Keys map[string]interface{} `json:"keys"` // TODO
+	Dir  string          `json:"dir"`
+	GPG  *GPGConfig      `json:"gpg"`
+	Keys map[string]*Key `json:"keys"`
 }
 
 func spawnGPG(cmd string, b []byte) []byte {
@@ -65,9 +71,13 @@ func (c *Stymie) Encrypt(b []byte) []byte {
 	}
 
 	cmd := fmt.Sprintf("gpg %s -e", strings.Join(args, " "))
-	fmt.Println("cmd", cmd)
+	//	fmt.Println("cmd", cmd)
 
 	return spawnGPG(cmd, b)
+}
+
+func GetKeyFile() string {
+	return GetStymieDir() + "/k"
 }
 
 func GetStymieDir() string {
