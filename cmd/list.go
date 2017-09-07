@@ -16,9 +16,7 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 
 	"github.com/spf13/cobra"
 )
@@ -35,19 +33,9 @@ var listCmd = &cobra.Command{
 	//to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		stymie := &Stymie{}
-		keyfile := GetKeyFile()
+		stymie.GetFileContents()
 
-		b, err := ioutil.ReadFile(keyfile)
-		CheckError(err)
-
-		// TODO: Error checking.
-		decrypted := stymie.Decrypt(b)
-
-		// Fill the `stymie` struct with the decrypted json.
-		err = json.Unmarshal(decrypted, stymie)
-		CheckError(err)
-
-		fmt.Println("Saved keys:\n")
+		fmt.Println("[stymie] Saved keys:\n")
 
 		for key := range stymie.Keys {
 			fmt.Println(key)

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -74,12 +75,39 @@ func (c *Stymie) Encrypt(b []byte) []byte {
 	return spawnGPG(cmd, b)
 }
 
+func (c *Stymie) GetFileContents() {
+	// Maybe pass filename is as func param?
+	keyfile := GetKeyFile()
+
+	b, err := ioutil.ReadFile(keyfile)
+	CheckError(err)
+
+	// TODO: Error checking.
+	decrypted := c.Decrypt(b)
+
+	// Fill the `stymie` struct with the decrypted json.
+	err = json.Unmarshal(decrypted, c)
+	CheckError(err)
+}
+
 func GetKeyFile() string {
 	return GetStymieDir() + "/k"
 }
 
 func GetStymieDir() string {
 	return os.Getenv("HOME") + "/.stymie.d"
+}
+
+func (c *Stymie) PutFileContents() {
+	// Back to json (maybe combine this with the actual encryption?).
+	byt, err := json.Marshal(c)
+	CheckError(err)
+
+	// TODO: Error checking.
+	encrypted := c.Encrypt(byt)
+
+	err = ioutil.WriteFile(GetKeyFile(), encrypted, 0700)
+	CheckError(err)
 }
 
 // Implement `Stringer` interface.

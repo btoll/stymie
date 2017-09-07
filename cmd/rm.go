@@ -18,48 +18,13 @@ package cmd
 import (
 	"fmt"
 
-	//	diceware "github.com/btoll/diceware-go/lib"
 	"github.com/spf13/cobra"
 )
 
-func (k *Key) getFields() {
-	for {
-		var s string
-
-		fmt.Print("URL: ")
-		_, err := fmt.Scanf("%s", &s)
-		CheckError(err)
-		k.Fields["url"] = s
-
-		for {
-			fmt.Print("Username: ")
-			if _, err := fmt.Scanf("%s", &s); err != nil {
-				fmt.Println("Cannot be blank!!")
-			} else {
-				k.Fields["username"] = s
-				break
-			}
-		}
-
-		for {
-			fmt.Print("Password: ")
-			if _, err := fmt.Scanf("%s", &s); err != nil {
-				fmt.Println("Cannot be blank!!")
-			} else {
-				k.Fields["password"] = s
-				break
-			}
-		}
-
-		//		fmt.Println(diceware.GetPassphrase(6))
-		return
-	}
-}
-
-// addCmd represents the add command
-var addCmd = &cobra.Command{
-	Use:   "add",
-	Short: "Add a new item",
+// rmCmd represents the rm command
+var rmCmd = &cobra.Command{
+	Use:   "rm",
+	Short: "Delete a key",
 	//	Long: `A longer description that spans multiple lines and likely contains examples
 	//and usage of using your command. For example:
 	//
@@ -72,30 +37,31 @@ var addCmd = &cobra.Command{
 			return
 		}
 
+		toRemove := args[0]
+
 		stymie := &Stymie{}
 		stymie.GetFileContents()
 
-		newkey := args[0]
-
-		if _, ok := stymie.Keys[newkey]; !ok {
-			k := &Key{
-				Fields: make(map[string]string),
+		if _, ok := stymie.Keys[toRemove]; ok {
+			var s string
+			fmt.Print("Are you sure you wish to delete the key [Y/n]: ")
+			fmt.Scanf("%s", &s)
+			switch s {
+			case "n":
+				fallthrough
+			case "N":
+				fmt.Println("[stymie] Operation aborted.")
+			default:
+				delete(stymie.Keys, toRemove)
+				stymie.PutFileContents()
+				fmt.Println("[stymie] Successfully removed key.")
 			}
-
-			k.getFields()
-
-			// Add the new key => struct.
-			stymie.Keys[newkey] = k
-
-			stymie.PutFileContents()
-
-			fmt.Println("[stymie] Successfully created key.")
 		} else {
-			fmt.Println("[stymie] Key already exists, exiting.")
+			fmt.Println("[stymie] Key doesn't exist, exiting.")
 		}
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(addCmd)
+	RootCmd.AddCommand(rmCmd)
 }
