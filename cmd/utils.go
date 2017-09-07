@@ -15,9 +15,7 @@ type GPGConfig struct {
 }
 
 type Key struct {
-	URL      string `json:"url"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Fields map[string]string `json:"fields"`
 }
 
 type Stymie struct {

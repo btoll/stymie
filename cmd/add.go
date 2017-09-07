@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	//	diceware "github.com/btoll/diceware-go/lib"
 	"github.com/spf13/cobra"
 )
 
@@ -30,14 +31,14 @@ func (k *Key) getFields() {
 		fmt.Print("URL: ")
 		_, err := fmt.Scanf("%s", &s)
 		CheckError(err)
-		k.URL = s
+		k.Fields["url"] = s
 
 		for {
 			fmt.Print("Username: ")
 			if _, err := fmt.Scanf("%s", &s); err != nil {
 				fmt.Println("Cannot be blank!!")
 			} else {
-				k.Username = s
+				k.Fields["username"] = s
 				break
 			}
 		}
@@ -47,11 +48,12 @@ func (k *Key) getFields() {
 			if _, err := fmt.Scanf("%s", &s); err != nil {
 				fmt.Println("Cannot be blank!!")
 			} else {
-				k.Password = s
+				k.Fields["password"] = s
 				break
 			}
 		}
 
+		//		fmt.Println(diceware.GetPassphrase(6))
 		return
 	}
 }
@@ -88,7 +90,10 @@ var addCmd = &cobra.Command{
 		newkey := args[0]
 
 		if _, ok := stymie.Keys[newkey]; !ok {
-			k := &Key{}
+			k := &Key{
+				Fields: make(map[string]string),
+			}
+
 			k.getFields()
 
 			// Add the new key => struct.
