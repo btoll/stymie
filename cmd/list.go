@@ -35,10 +35,14 @@ var listCmd = &cobra.Command{
 		stymie := &Stymie{}
 		stymie.GetFileContents()
 
-		fmt.Println("[stymie] Saved keys:\n")
+		if len(stymie.Keys) == 0 {
+			fmt.Println("[stymie] No installed keys.")
+		} else {
+			fmt.Println("[stymie] Saved keys:\n")
 
-		for key := range stymie.Keys {
-			fmt.Println(key)
+			for key := range stymie.Keys {
+				fmt.Println(key)
+			}
 		}
 	},
 }
