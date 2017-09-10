@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// https://talks.golang.org/2012/10things.slide#4
 type GPGConfig struct {
 	Armor     bool   `json:"armor"`
 	Sign      bool   `json:"sign"`

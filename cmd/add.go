@@ -59,7 +59,7 @@ func (k *Key) getFields() {
 // addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add",
-	Short: "Add a new item",
+	Short: "Add a new key",
 	//	Long: `A longer description that spans multiple lines and likely contains examples
 	//and usage of using your command. For example:
 	//
