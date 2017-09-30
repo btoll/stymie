@@ -25,7 +25,7 @@ import (
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
-	Short: "Generates a Diceware password",
+	Short: "Generates a Diceware passphrase",
 	//	Long: `A longer description that spans multiple lines and likely contains examples
 	//and usage of using your command. For example:
 	//

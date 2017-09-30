@@ -109,7 +109,7 @@ func (c *Stymie) makeDir() {
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initializes the `stymie` store",
+	Short: "Initializes the `stymie` database",
 	//	Long: `A longer description that spans multiple lines and likely contains examples
 	//and usage of using your command. For example:
 	//

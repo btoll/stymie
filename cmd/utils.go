@@ -46,10 +46,6 @@ func spawnGPG(cmd string, b []byte) []byte {
 	return gpgBytes
 }
 
-func FormatError(err error) error {
-	return fmt.Errorf("[ERROR] %v\n", err)
-}
-
 func (c *Stymie) Decrypt(b []byte) []byte {
 	// Gather the args from the GPGConfig struct to send to the `gpg` binary.
 	return spawnGPG("gpg -d", b)
@@ -71,6 +67,10 @@ func (c *Stymie) Encrypt(b []byte) []byte {
 	//	fmt.Println("cmd", cmd)
 
 	return spawnGPG(cmd, b)
+}
+
+func FormatError(err error) error {
+	return fmt.Errorf("[ERROR] %v\n", err)
 }
 
 func (c *Stymie) GetFileContents() error {
