@@ -77,21 +77,29 @@ func (c *Stymie) getConfig() {
 	}
 }
 
-func (c *Stymie) makeConfigFile() {
+func (c *Stymie) makeConfigFile() error {
 	f, err := os.Create(c.Dir + "/k")
 	defer f.Close()
-	CheckError(err)
+	if err != nil {
+		return FormatError(err)
+	}
 
 	b, err := json.Marshal(c.GPG)
 
-	CheckError(err)
+	if err != nil {
+		return FormatError(err)
+	}
 
 	// Stuff the gpgConfig into the json.
 	d := fmt.Sprintf("{ \"dir\": \"%s\", \"gpg\": %s, \"keys\": {} }", c.Dir, string(b))
 
 	f.Write(c.Encrypt([]byte(d)))
 
-	CheckError(err)
+	if err != nil {
+		return FormatError(err)
+	}
+
+	return nil
 }
 
 func (c *Stymie) makeDir() {
@@ -123,7 +131,7 @@ var initCmd = &cobra.Command{
 		fmt.Println("Creating stymie config file")
 		stymie.makeConfigFile()
 
-		fmt.Println("Installation complete")
+		fmt.Println("Installation complete!")
 	},
 }
 

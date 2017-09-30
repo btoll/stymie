@@ -29,28 +29,25 @@ type Stymie struct {
 func spawnGPG(cmd string, b []byte) []byte {
 	gpgCmd := exec.Command("bash", "-c", cmd)
 	gpgIn, err := gpgCmd.StdinPipe()
-	CheckError(err)
+	FormatError(err)
 
 	gpgOut, err := gpgCmd.StdoutPipe()
-	CheckError(err)
+	FormatError(err)
 
 	gpgCmd.Start()
 	gpgIn.Write(b)
 	gpgIn.Close()
 
 	gpgBytes, err := ioutil.ReadAll(gpgOut)
-	CheckError(err)
+	FormatError(err)
 
 	gpgCmd.Wait()
 
 	return gpgBytes
 }
 
-func CheckError(err error) {
-	if err != nil {
-		fmt.Printf("%v\n", err)
-		return
-	}
+func FormatError(err error) error {
+	return fmt.Errorf("[ERROR] %v\n", err)
 }
 
 func (c *Stymie) Decrypt(b []byte) []byte {
@@ -76,19 +73,23 @@ func (c *Stymie) Encrypt(b []byte) []byte {
 	return spawnGPG(cmd, b)
 }
 
-func (c *Stymie) GetFileContents() {
+func (c *Stymie) GetFileContents() error {
 	// Maybe pass filename is as func param?
 	keyfile := GetKeyFile()
 
 	b, err := ioutil.ReadFile(keyfile)
-	CheckError(err)
+	if err != nil {
+		return FormatError(err)
+	}
 
 	// TODO: Error checking.
 	decrypted := c.Decrypt(b)
 
 	// Fill the `stymie` struct with the decrypted json.
 	err = json.Unmarshal(decrypted, c)
-	CheckError(err)
+	FormatError(err)
+
+	return nil
 }
 
 func GetKeyFile() string {
@@ -102,13 +103,13 @@ func GetStymieDir() string {
 func (c *Stymie) PutFileContents() {
 	// Back to json (maybe combine this with the actual encryption?).
 	byt, err := json.Marshal(c)
-	CheckError(err)
+	FormatError(err)
 
 	// TODO: Error checking.
 	encrypted := c.Encrypt(byt)
 
 	err = ioutil.WriteFile(GetKeyFile(), encrypted, 0700)
-	CheckError(err)
+	FormatError(err)
 }
 
 // Implement `Stringer` interface.

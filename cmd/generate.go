@@ -18,7 +18,7 @@ package cmd
 import (
 	"fmt"
 
-	diceware "github.com/btoll/diceware-go/lib"
+	"github.com/btoll/diceware"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +33,7 @@ var generateCmd = &cobra.Command{
 	//This application is a tool to generate the needed files
 	//to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(diceware.GetPassphrase(6))
+		fmt.Println(diceware.Generate(6))
 	},
 }
 

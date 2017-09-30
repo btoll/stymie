@@ -15,7 +15,7 @@
 
 package main
 
-import "stymie/cmd"
+import "github.com/btoll/stymie-go/cmd"
 
 func main() {
 	cmd.Execute()

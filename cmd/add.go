@@ -18,42 +18,92 @@ package cmd
 import (
 	"fmt"
 
-	//	diceware "github.com/btoll/diceware-go/lib"
+	"github.com/btoll/diceware"
+	sillypass "github.com/btoll/sillypass-go"
 	"github.com/spf13/cobra"
 )
 
-func (k *Key) getFields() {
+func (k *Key) generatePassphrase(fn func() string) {
+	var t string
+	s := fn()
+	fmt.Println(s)
+
+	fmt.Print("Accept? [Y/n]: ")
+	fmt.Scanf("%s", &t)
+	switch t {
+	case "n":
+		fallthrough
+	case "N":
+		k.generatePassphrase(fn)
+	default:
+		k.Fields["password"] = s
+	}
+
+	return
+}
+
+func (k *Key) getFields() error {
 	for {
 		var s string
 
 		fmt.Print("URL: ")
-		_, err := fmt.Scanf("%s", &s)
-		CheckError(err)
+		// Note that we don't care if there's an error here!
+		fmt.Scanf("%s", &s)
+
 		k.Fields["url"] = s
 
 		for {
 			fmt.Print("Username: ")
 			if _, err := fmt.Scanf("%s", &s); err != nil {
-				fmt.Println("Cannot be blank!!")
+				fmt.Println("Cannot be blank!")
 			} else {
 				k.Fields["username"] = s
 				break
 			}
 		}
 
-		for {
-			fmt.Print("Password: ")
-			if _, err := fmt.Scanf("%s", &s); err != nil {
-				fmt.Println("Cannot be blank!!")
-			} else {
-				k.Fields["password"] = s
-				break
+		fmt.Print(`Password generation method:
+    (1) Diceware (passphrase)
+    (2) Sillypass (mixed-case, alphanumeric, random characters
+    (3) I'll generate it myself
+Select [1]: `)
+		fmt.Scanf("%s", &s)
+		switch s {
+		case "2":
+			k.generatePassphrase(func() string {
+				return sillypass.Generate(12)
+			})
+		case "3":
+			for {
+				fmt.Print("Custom password: ")
+				if _, err := fmt.Scanf("%s", &s); err != nil {
+					fmt.Println("Cannot be blank!")
+				} else {
+					k.Fields["password"] = s
+					break
+				}
 			}
+		default:
+			k.generatePassphrase(func() string {
+				return diceware.Generate(6)
+			})
 		}
 
-		//		fmt.Println(diceware.GetPassphrase(6))
-		return
+		fmt.Print("Create another field? [y/N]: ")
+		fmt.Scanf("%s", &s)
+		switch s {
+		case "y":
+			fallthrough
+		case "Y":
+			//		k.generatePassphrase(fn)
+		default:
+			//		k.Fields["password"] = s
+		}
+
+		break
 	}
+
+	return nil
 }
 
 // addCmd represents the add command
@@ -73,7 +123,10 @@ var addCmd = &cobra.Command{
 		}
 
 		stymie := &Stymie{}
-		stymie.GetFileContents()
+		if err := stymie.GetFileContents(); err != nil {
+			fmt.Print(err)
+			return
+		}
 
 		newkey := args[0]
 

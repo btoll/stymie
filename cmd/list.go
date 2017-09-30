@@ -38,7 +38,7 @@ var listCmd = &cobra.Command{
 		if len(stymie.Keys) == 0 {
 			fmt.Println("[stymie] No installed keys.")
 		} else {
-			fmt.Println("[stymie] Saved keys:\n")
+			fmt.Println("[stymie] Saved keys:")
 
 			for key := range stymie.Keys {
 				fmt.Println(key)

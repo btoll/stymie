@@ -30,7 +30,7 @@ var cfgFile string
 var RootCmd = &cobra.Command{
 	Use:   "stymie",
 	Short: "A cryptographically secure password manager",
-	Long:  `stymie uses GPG to encrypt and sign all the things`,
+	Long:  "`stymie` uses GPG to encrypt and sign all the things.",
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
