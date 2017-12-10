@@ -40,7 +40,10 @@ var rmCmd = &cobra.Command{
 		toRemove := args[0]
 
 		stymie := &Stymie{}
-		stymie.GetFileContents()
+		if err := stymie.GetFileContents(); err != nil {
+			fmt.Print(err)
+			return
+		}
 
 		if _, ok := stymie.Keys[toRemove]; ok {
 			var s string

@@ -34,7 +34,10 @@ var hasCmd = &cobra.Command{
 		keyname := args[0]
 
 		stymie := &Stymie{}
-		stymie.GetFileContents()
+		if err := stymie.GetFileContents(); err != nil {
+			fmt.Print(err)
+			return
+		}
 
 		fmt.Printf("%t\n", stymie.Keys[keyname] != nil)
 	},

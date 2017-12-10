@@ -33,7 +33,10 @@ var listCmd = &cobra.Command{
 	//to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		stymie := &Stymie{}
-		stymie.GetFileContents()
+		if err := stymie.GetFileContents(); err != nil {
+			fmt.Print(err)
+			return
+		}
 
 		if len(stymie.Keys) == 0 {
 			fmt.Println("[stymie] No installed keys.")

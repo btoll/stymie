@@ -21,12 +21,52 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// editCmd represents the edit command
+func (k *Key) getUpdatedFields() *Key {
+	newkey := &Key{
+		Fields: make(map[string]string),
+	}
+
+	for key, value := range k.Fields {
+		var newvalue string
+
+		fmt.Printf("Edit %s (%s): ", key, value)
+
+		// Usually, an error here means that nothing was entered (just a newline, e.g. [Enter]).
+		if _, err := fmt.Scanf("%s", &newvalue); err != nil {
+			newkey.Fields[key] = value
+		} else {
+			newkey.Fields[key] = newvalue
+		}
+	}
+
+	return newkey
+}
+
 var editCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "Edit a key",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("edit called")
+		if len(args) == 0 {
+			fmt.Println("[stymie] No key name provided, aborting.")
+			return
+		}
+
+		stymie := &Stymie{}
+		if err := stymie.GetFileContents(); err != nil {
+			fmt.Print(err)
+			return
+		}
+
+		keyname := args[0]
+
+		if _, ok := stymie.Keys[keyname]; ok {
+			key := stymie.Keys[keyname]
+			stymie.Keys[keyname] = key.getUpdatedFields()
+			stymie.PutFileContents()
+			fmt.Printf("\n[stymie] Updated key `%s`\n", keyname)
+		} else {
+			fmt.Println("[stymie] Key doesn't exist, exiting.")
+		}
 	},
 }
 
