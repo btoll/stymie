@@ -102,11 +102,11 @@ func GetStymieDir() string {
 
 func (c *Stymie) PutFileContents() {
 	// Back to json (maybe combine this with the actual encryption?).
-	byt, err := json.Marshal(c)
+	bytes, err := json.Marshal(c)
 	FormatError(err)
 
 	// TODO: Error checking.
-	encrypted := c.Encrypt(byt)
+	encrypted := c.Encrypt(bytes)
 
 	err = ioutil.WriteFile(GetKeyFile(), encrypted, 0700)
 	FormatError(err)

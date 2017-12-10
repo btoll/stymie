@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/btoll/diceware"
 	sillypass "github.com/btoll/sillypass-go"
@@ -66,7 +67,8 @@ func (k *Key) generatePassphrase(fn func() string) {
 	case "N":
 		k.generatePassphrase(fn)
 	default:
-		k.Fields["password"] = s
+		// Remove spaces (nop for Sillypass).
+		k.Fields["password"] = strings.Replace(s, " ", "", -1)
 	}
 
 	return
@@ -117,6 +119,7 @@ Select [1]: `)
 			k.generatePassphrase(func() string {
 				return diceware.Generate(6)
 			})
+			//			k.generatePassphrase(diceware.Generate)
 		}
 
 		k.addNewFields()

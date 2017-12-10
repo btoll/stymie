@@ -44,9 +44,11 @@ var rmCmd = &cobra.Command{
 
 		if _, ok := stymie.Keys[toRemove]; ok {
 			var s string
-			fmt.Print("Are you sure you wish to delete the key [Y/n]: ")
+			fmt.Print("Are you sure you wish to delete the key [y/N]: ")
 			fmt.Scanf("%s", &s)
 			switch s {
+			case "":
+				fallthrough
 			case "n":
 				fallthrough
 			case "N":
