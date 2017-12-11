@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -102,11 +103,15 @@ func GetStymieDir() string {
 
 func (c *Stymie) PutFileContents() {
 	// Back to json (maybe combine this with the actual encryption?).
-	bytes, err := json.Marshal(c)
+	b, err := json.Marshal(c)
 	FormatError(err)
 
+	// Pretty-print the json.
+	var out bytes.Buffer
+	json.Indent(&out, b, "", "\t")
+
 	// TODO: Error checking.
-	encrypted := c.Encrypt(bytes)
+	encrypted := c.Encrypt(out.Bytes())
 
 	err = ioutil.WriteFile(GetKeyFile(), encrypted, 0700)
 	FormatError(err)
