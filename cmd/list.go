@@ -17,9 +17,16 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/spf13/cobra"
 )
+
+type ByKey []string
+
+func (a ByKey) Len() int           { return len(a) }
+func (a ByKey) Less(i, j int) bool { return a[i] < a[j] }
+func (a ByKey) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
@@ -43,7 +50,27 @@ var listCmd = &cobra.Command{
 		} else {
 			fmt.Println("[stymie] Saved keys:")
 
+			type Interface interface {
+				// Len is the number of elements in the collection.
+				Len() int
+				// Less reports whether the element with
+				// index i should sort before the element with index j.
+				Less(i, j int) bool
+				// Swap swaps the elements with indexes i and j.
+				Swap(i, j int)
+			}
+
+			keys := make(ByKey, len(stymie.Keys))
+
+			j := 0
 			for key := range stymie.Keys {
+				keys[j] = key
+				j = j + 1
+			}
+
+			sort.Sort(keys)
+
+			for _, key := range keys {
 				fmt.Println(key)
 			}
 		}
