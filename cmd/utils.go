@@ -8,6 +8,9 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/btoll/diceware"
+	sillypass "github.com/btoll/sillypass-go"
 )
 
 // https://talks.golang.org/2012/10things.slide#4
@@ -25,6 +28,62 @@ type Stymie struct {
 	Dir  string          `json:"dir"`
 	GPG  *GPGConfig      `json:"gpg"`
 	Keys map[string]*Key `json:"keys"`
+}
+
+func (k *Key) generatePassphrase(fn func() string) string {
+	var t string
+	s := fn()
+	fmt.Println(s)
+
+	fmt.Print("Accept? [Y/n]: ")
+	fmt.Scanf("%s", &t)
+	switch t {
+	case "n":
+		fallthrough
+	case "N":
+		return k.generatePassphrase(fn)
+	default:
+		// Remove spaces (nop for Sillypass).
+		return strings.Replace(s, " ", "", -1)
+	}
+
+	return ""
+}
+
+func (k *Key) getPassword() string {
+	var s string
+
+	fmt.Println("\t(1) Diceware (passphrase)")
+	fmt.Println("\t(2) Sillypass (mixed-case, alphanumeric, random characters)")
+	fmt.Println("\t(3) I'll generate it myself")
+	fmt.Println("\t(4) Skip")
+	fmt.Print("Select [1]: ")
+	fmt.Scanf("%s", &s)
+	switch s {
+	case "2":
+		return k.generatePassphrase(func() string {
+			return sillypass.Generate(12)
+		})
+	case "3":
+		for {
+			fmt.Print("Custom password: ")
+			if _, err := fmt.Scanf("%s", &s); err != nil {
+				fmt.Println("Cannot be blank!")
+			} else {
+				return s
+				break
+			}
+		}
+	case "4":
+		break
+	default:
+		return k.generatePassphrase(func() string {
+			return diceware.Generate(6)
+		})
+		//			k.generatePassphrase(diceware.Generate)
+	}
+
+	return ""
 }
 
 func spawnGPG(cmd string, b []byte) []byte {

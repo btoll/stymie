@@ -29,13 +29,21 @@ func (k *Key) getUpdatedFields() *Key {
 	for key, value := range k.Fields {
 		var newvalue string
 
-		fmt.Printf("Edit %s (%s): ", key, value)
-
-		// Usually, an error here means that nothing was entered (just a newline, e.g. [Enter]).
-		if _, err := fmt.Scanf("%s", &newvalue); err != nil {
-			newkey.Fields[key] = value
+		if key == "password" {
+			var s string
+			fmt.Printf("Edit %s (%s):\n", key, value)
+			if s = k.getPassword(); s == "" {
+				s = value
+			}
+			newkey.Fields[key] = s
 		} else {
-			newkey.Fields[key] = newvalue
+			fmt.Printf("Edit %s (%s): ", key, value)
+			// Usually, an error here means that nothing was entered (just a newline, e.g. [Enter]).
+			if _, err := fmt.Scanf("%s", &newvalue); err != nil {
+				newkey.Fields[key] = value
+			} else {
+				newkey.Fields[key] = newvalue
+			}
 		}
 	}
 

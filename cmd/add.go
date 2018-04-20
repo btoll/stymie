@@ -17,10 +17,7 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
-	"github.com/btoll/diceware"
-	sillypass "github.com/btoll/sillypass-go"
 	"github.com/spf13/cobra"
 )
 
@@ -54,26 +51,6 @@ func (k *Key) addNewFields() {
 	}
 }
 
-func (k *Key) generatePassphrase(fn func() string) {
-	var t string
-	s := fn()
-	fmt.Println(s)
-
-	fmt.Print("Accept? [Y/n]: ")
-	fmt.Scanf("%s", &t)
-	switch t {
-	case "n":
-		fallthrough
-	case "N":
-		k.generatePassphrase(fn)
-	default:
-		// Remove spaces (nop for Sillypass).
-		k.Fields["password"] = strings.Replace(s, " ", "", -1)
-	}
-
-	return
-}
-
 func (k *Key) getFields() error {
 	for {
 		var s string
@@ -94,34 +71,8 @@ func (k *Key) getFields() error {
 			}
 		}
 
-		fmt.Print(`Password generation method:
-    (1) Diceware (passphrase)
-    (2) Sillypass (mixed-case, alphanumeric, random characters
-    (3) I'll generate it myself
-Select [1]: `)
-		fmt.Scanf("%s", &s)
-		switch s {
-		case "2":
-			k.generatePassphrase(func() string {
-				return sillypass.Generate(12)
-			})
-		case "3":
-			for {
-				fmt.Print("Custom password: ")
-				if _, err := fmt.Scanf("%s", &s); err != nil {
-					fmt.Println("Cannot be blank!")
-				} else {
-					k.Fields["password"] = s
-					break
-				}
-			}
-		default:
-			k.generatePassphrase(func() string {
-				return diceware.Generate(6)
-			})
-			//			k.generatePassphrase(diceware.Generate)
-		}
-
+		fmt.Println("Password generation method:")
+		k.Fields["password"] = k.getPassword()
 		k.addNewFields()
 		break
 	}
