@@ -21,7 +21,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// hasCmd represents the has command
 var hasCmd = &cobra.Command{
 	Use:   "has",
 	Short: "Returns `true` if the key exists, `false` otherwise",

@@ -28,7 +28,6 @@ func (a ByKey) Len() int           { return len(a) }
 func (a ByKey) Less(i, j int) bool { return a[i] < a[j] }
 func (a ByKey) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
-// listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all saved keys",

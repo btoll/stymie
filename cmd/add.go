@@ -21,66 +21,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (k *Key) addNewFields() {
-	var s, n, v string
-
-	fmt.Print("Create another field? [y/N]: ")
-	fmt.Scanf("%s", &s)
-	switch s {
-	case "y":
-		fallthrough
-	case "Y":
-		for {
-			fmt.Print("Name: ")
-
-			if _, err := fmt.Scanf("%s", &n); err != nil {
-				fmt.Println("Cannot be blank!")
-			} else {
-				fmt.Print("Value: ")
-
-				if _, err := fmt.Scanf("%s", &v); err != nil {
-					fmt.Println("Cannot be blank!")
-				} else {
-					k.Fields[n] = v
-					break
-				}
-			}
-		}
-
-		k.addNewFields()
-	}
-}
-
-func (k *Key) getFields() error {
-	for {
-		var s string
-
-		fmt.Print("URL: ")
-		// Note that we don't care if there's an error here!
-		fmt.Scanf("%s", &s)
-
-		k.Fields["url"] = s
-
-		for {
-			fmt.Print("Username: ")
-			if _, err := fmt.Scanf("%s", &s); err != nil {
-				fmt.Println("Cannot be blank!")
-			} else {
-				k.Fields["username"] = s
-				break
-			}
-		}
-
-		fmt.Println("Password generation method:")
-		k.Fields["password"] = k.getPassword()
-		k.addNewFields()
-		break
-	}
-
-	return nil
-}
-
-// addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new key",

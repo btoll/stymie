@@ -21,35 +21,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (k *Key) getUpdatedFields() *Key {
-	newkey := &Key{
-		Fields: make(map[string]string),
-	}
-
-	for key, value := range k.Fields {
-		var newvalue string
-
-		if key == "password" {
-			var s string
-			fmt.Printf("Edit %s (%s):\n", key, value)
-			if s = k.getPassword(); s == "" {
-				s = value
-			}
-			newkey.Fields[key] = s
-		} else {
-			fmt.Printf("Edit %s (%s): ", key, value)
-			// Usually, an error here means that nothing was entered (just a newline, e.g. [Enter]).
-			if _, err := fmt.Scanf("%s", &newvalue); err != nil {
-				newkey.Fields[key] = value
-			} else {
-				newkey.Fields[key] = newvalue
-			}
-		}
-	}
-
-	return newkey
-}
-
 var editCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "Edit a key",

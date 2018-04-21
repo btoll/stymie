@@ -21,7 +21,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// rmCmd represents the rm command
 var rmCmd = &cobra.Command{
 	Use:   "rm",
 	Short: "Delete a key",

@@ -24,89 +24,11 @@ TODO
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 )
 
-func (c *Stymie) getConfig() {
-	for {
-		var s string
-
-		fmt.Print("Enter the full path of the directory to install .stymie.d [~/.stymie.d]: ")
-		fmt.Scanf("%s", &s)
-		if s != "" {
-			c.Dir = s
-		}
-
-		for {
-			fmt.Print("Enter the email address or key ID of your public key: ")
-			if _, err := fmt.Scanf("%s", &s); err != nil {
-				fmt.Println("Cannot be blank!!")
-			} else {
-				c.GPG.Recipient = s
-				break
-			}
-		}
-
-		fmt.Print("Should GPG/PGP encrypt the password files as binary? [Y/n]: ")
-		fmt.Scanf("%s", &s)
-		switch s {
-		case "n":
-			fallthrough
-		case "N":
-			c.GPG.Armor = true
-		default:
-			c.GPG.Armor = false
-		}
-
-		fmt.Print("Should GPG/PGP also sign the password files? (Recommended) [Y/n]: ")
-		fmt.Scanf("%s", &s)
-		switch s {
-		case "n":
-			fallthrough
-		case "N":
-			c.GPG.Sign = false
-		default:
-			c.GPG.Sign = true
-		}
-
-		return
-	}
-}
-
-func (c *Stymie) makeConfigFile() error {
-	f, err := os.Create(c.Dir + "/k")
-	defer f.Close()
-	if err != nil {
-		return FormatError(err)
-	}
-
-	b, err := json.Marshal(c.GPG)
-
-	if err != nil {
-		return FormatError(err)
-	}
-
-	// Stuff the gpgConfig into the json.
-	d := fmt.Sprintf("{ \"dir\": \"%s\", \"gpg\": %s, \"keys\": {} }", c.Dir, string(b))
-
-	f.Write(c.Encrypt([]byte(d)))
-
-	if err != nil {
-		return FormatError(err)
-	}
-
-	return nil
-}
-
-func (c *Stymie) makeDir() {
-	os.Mkdir(c.Dir, 0700)
-}
-
-// initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initializes the `stymie` database",
