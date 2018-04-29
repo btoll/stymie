@@ -45,7 +45,10 @@ type Stymie struct {
 	Keys map[string]*Key `json:"keys"`
 }
 
-func (k *Key) addNewFields() {
+/* ----------------------------------------------------------- */
+// Private
+/* ----------------------------------------------------------- */
+func addNewFields(k *Key) *Key {
 	var s, n, v string
 
 	fmt.Print("Create another field? [y/N]: ")
@@ -71,10 +74,83 @@ func (k *Key) addNewFields() {
 			}
 		}
 
-		k.addNewFields()
+		addNewFields(k)
 	}
+
+	return k
 }
 
+func formatError(err error) error {
+	return fmt.Errorf("[ERROR] %v\n", err)
+}
+
+func getKeyFile() string {
+	return GetStymieDir() + "/k"
+}
+
+func spawnGPG(cmd string, b []byte) []byte {
+	gpgCmd := exec.Command("bash", "-c", cmd)
+	gpgIn, err := gpgCmd.StdinPipe()
+	formatError(err)
+
+	gpgOut, err := gpgCmd.StdoutPipe()
+	formatError(err)
+
+	gpgCmd.Start()
+	gpgIn.Write(b)
+	gpgIn.Close()
+
+	gpgBytes, err := ioutil.ReadAll(gpgOut)
+	formatError(err)
+
+	gpgCmd.Wait()
+
+	return gpgBytes
+}
+
+/* ----------------------------------------------------------- */
+// Public
+/* ----------------------------------------------------------- */
+func GetKeyFields() *Key {
+	k := &Key{
+		Fields: make(map[string]string),
+	}
+
+	for {
+		var s string
+
+		fmt.Print("URL: ")
+		// Note that we don't care if there's an error here!
+		fmt.Scanf("%s", &s)
+
+		k.Fields["url"] = s
+
+		for {
+			fmt.Print("Username: ")
+			if _, err := fmt.Scanf("%s", &s); err != nil {
+				fmt.Println("Cannot be blank!")
+			} else {
+				k.Fields["username"] = s
+				break
+			}
+		}
+
+		fmt.Println("Password generation method:")
+		k.Fields["password"] = k.getPassword()
+		k = addNewFields(k)
+		break
+	}
+
+	return k
+}
+
+func GetStymieDir() string {
+	return os.Getenv("HOME") + "/.stymie.d"
+}
+
+/* ----------------------------------------------------------- */
+// Key methods
+/* ----------------------------------------------------------- */
 func (k *Key) generatePassphrase(fn func() string) string {
 	var t string
 	s := fn()
@@ -131,35 +207,6 @@ func (k *Key) getPassword() string {
 	return ""
 }
 
-func (k *Key) getFields() error {
-	for {
-		var s string
-
-		fmt.Print("URL: ")
-		// Note that we don't care if there's an error here!
-		fmt.Scanf("%s", &s)
-
-		k.Fields["url"] = s
-
-		for {
-			fmt.Print("Username: ")
-			if _, err := fmt.Scanf("%s", &s); err != nil {
-				fmt.Println("Cannot be blank!")
-			} else {
-				k.Fields["username"] = s
-				break
-			}
-		}
-
-		fmt.Println("Password generation method:")
-		k.Fields["password"] = k.getPassword()
-		k.addNewFields()
-		break
-	}
-
-	return nil
-}
-
 func (k *Key) getUpdatedFields() *Key {
 	newkey := &Key{
 		Fields: make(map[string]string),
@@ -186,29 +233,12 @@ func (k *Key) getUpdatedFields() *Key {
 		}
 	}
 
-	return newkey
+	return addNewFields(newkey)
 }
 
-func spawnGPG(cmd string, b []byte) []byte {
-	gpgCmd := exec.Command("bash", "-c", cmd)
-	gpgIn, err := gpgCmd.StdinPipe()
-	FormatError(err)
-
-	gpgOut, err := gpgCmd.StdoutPipe()
-	FormatError(err)
-
-	gpgCmd.Start()
-	gpgIn.Write(b)
-	gpgIn.Close()
-
-	gpgBytes, err := ioutil.ReadAll(gpgOut)
-	FormatError(err)
-
-	gpgCmd.Wait()
-
-	return gpgBytes
-}
-
+/* ----------------------------------------------------------- */
+// Stymie methods
+/* ----------------------------------------------------------- */
 func (c *Stymie) Decrypt(b []byte) []byte {
 	// Gather the args from the GPGConfig struct to send to the `gpg` binary.
 	return spawnGPG("gpg -d", b)
@@ -232,17 +262,13 @@ func (c *Stymie) Encrypt(b []byte) []byte {
 	return spawnGPG(cmd, b)
 }
 
-func FormatError(err error) error {
-	return fmt.Errorf("[ERROR] %v\n", err)
-}
-
 func (c *Stymie) GetFileContents() error {
 	// Maybe pass filename is as func param?
-	keyfile := GetKeyFile()
+	keyfile := getKeyFile()
 
 	b, err := ioutil.ReadFile(keyfile)
 	if err != nil {
-		return FormatError(err)
+		return formatError(err)
 	}
 
 	// TODO: Error checking.
@@ -250,7 +276,7 @@ func (c *Stymie) GetFileContents() error {
 
 	// Fill the `stymie` struct with the decrypted json.
 	err = json.Unmarshal(decrypted, c)
-	FormatError(err)
+	formatError(err)
 
 	return nil
 }
@@ -305,13 +331,13 @@ func (c *Stymie) makeConfigFile() error {
 	f, err := os.Create(c.Dir + "/k")
 	defer f.Close()
 	if err != nil {
-		return FormatError(err)
+		return formatError(err)
 	}
 
 	b, err := json.Marshal(c.GPG)
 
 	if err != nil {
-		return FormatError(err)
+		return formatError(err)
 	}
 
 	// Stuff the gpgConfig into the json.
@@ -320,7 +346,7 @@ func (c *Stymie) makeConfigFile() error {
 	f.Write(c.Encrypt([]byte(d)))
 
 	if err != nil {
-		return FormatError(err)
+		return formatError(err)
 	}
 
 	return nil
@@ -330,18 +356,10 @@ func (c *Stymie) makeDir() {
 	os.Mkdir(c.Dir, 0700)
 }
 
-func GetKeyFile() string {
-	return GetStymieDir() + "/k"
-}
-
-func GetStymieDir() string {
-	return os.Getenv("HOME") + "/.stymie.d"
-}
-
 func (c *Stymie) PutFileContents() {
 	// Back to json (maybe combine this with the actual encryption?).
 	b, err := json.Marshal(c)
-	FormatError(err)
+	formatError(err)
 
 	// Pretty-print the json.
 	var out bytes.Buffer
@@ -350,8 +368,8 @@ func (c *Stymie) PutFileContents() {
 	// TODO: Error checking.
 	encrypted := c.Encrypt(out.Bytes())
 
-	err = ioutil.WriteFile(GetKeyFile(), encrypted, 0700)
-	FormatError(err)
+	err = ioutil.WriteFile(getKeyFile(), encrypted, 0700)
+	formatError(err)
 }
 
 // Implement `Stringer` interface.

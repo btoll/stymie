@@ -45,17 +45,9 @@ var addCmd = &cobra.Command{
 		newkey := args[0]
 
 		if _, ok := stymie.Keys[newkey]; !ok {
-			k := &Key{
-				Fields: make(map[string]string),
-			}
-
-			k.getFields()
-
 			// Add the new key => struct.
-			stymie.Keys[newkey] = k
-
+			stymie.Keys[newkey] = GetKeyFields()
 			stymie.PutFileContents()
-
 			fmt.Println("[stymie] Successfully created key.")
 		} else {
 			fmt.Println("[stymie] Key already exists, exiting.")
