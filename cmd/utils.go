@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/btoll/diceware"
@@ -39,10 +40,17 @@ type Key struct {
 	Fields map[string]string `json:"fields"`
 }
 
+type PassConfig struct {
+	Diceware  int `json:"diceware"`  // Number of words in a Diceware passphrase.
+	Sillypass int `json:"sillypass"` // Number of characters in a Sillypass password.
+}
+
 type Stymie struct {
-	Dir  string          `json:"dir"`
-	GPG  *GPGConfig      `json:"gpg"`
-	Keys map[string]*Key `json:"keys"`
+	Dir string     `json:"dir"`
+	GPG *GPGConfig `json:"gpg"`
+	// TODO: Why can't PassConfig be a pointer? 20180603
+	PassConfig PassConfig      `json:"passConfig"`
+	Keys       map[string]*Key `json:"keys"`
 }
 
 /* ----------------------------------------------------------- */
@@ -111,7 +119,7 @@ func spawnGPG(cmd string, b []byte) []byte {
 /* ----------------------------------------------------------- */
 // Public
 /* ----------------------------------------------------------- */
-func GetKeyFields() *Key {
+func GetKeyFields(passConfig PassConfig) *Key {
 	k := &Key{
 		Fields: make(map[string]string),
 	}
@@ -136,7 +144,7 @@ func GetKeyFields() *Key {
 		}
 
 		fmt.Println("Password generation method:")
-		k.Fields["password"] = k.getPassword()
+		k.Fields["password"] = k.getPassword(passConfig)
 		k = addNewFields(k)
 		break
 	}
@@ -171,7 +179,7 @@ func (k *Key) generatePassphrase(fn func() string) string {
 	return ""
 }
 
-func (k *Key) getPassword() string {
+func (k *Key) getPassword(passConfig PassConfig) string {
 	var s string
 
 	fmt.Println("\t(1) Diceware (passphrase)")
@@ -183,7 +191,7 @@ func (k *Key) getPassword() string {
 	switch s {
 	case "2":
 		return k.generatePassphrase(func() string {
-			return sillypass.Generate(12)
+			return sillypass.Generate(passConfig.Sillypass)
 		})
 	case "3":
 		for {
@@ -199,7 +207,7 @@ func (k *Key) getPassword() string {
 		break
 	default:
 		return k.generatePassphrase(func() string {
-			return diceware.Generate(6)
+			return diceware.Generate(passConfig.Diceware)
 		})
 		//			k.generatePassphrase(diceware.Generate)
 	}
@@ -207,7 +215,7 @@ func (k *Key) getPassword() string {
 	return ""
 }
 
-func (k *Key) getUpdatedFields() *Key {
+func (k *Key) getUpdatedFields(passConfig PassConfig) *Key {
 	newkey := &Key{
 		Fields: make(map[string]string),
 	}
@@ -218,7 +226,7 @@ func (k *Key) getUpdatedFields() *Key {
 		if key == "password" {
 			var s string
 			fmt.Printf("Edit %s (%s):\n", key, value)
-			if s = k.getPassword(); s == "" {
+			if s = k.getPassword(passConfig); s == "" {
 				s = value
 			}
 			newkey.Fields[key] = s
@@ -284,6 +292,7 @@ func (c *Stymie) GetFileContents() error {
 func (c *Stymie) getConfig() {
 	for {
 		var s string
+		var i int
 
 		fmt.Print("Enter the full path of the directory to install .stymie.d [~/.stymie.d]: ")
 		fmt.Scanf("%s", &s)
@@ -323,6 +332,26 @@ func (c *Stymie) getConfig() {
 			c.GPG.Sign = true
 		}
 
+		fmt.Print("How many words should Diceware use to generate a passphrase? [6]: ")
+		fmt.Scanf("%s", &s)
+		i, _ = strconv.Atoi(s)
+		// Equals zero if there was an error, such as a user entering characters that couldn't be converted to an integer.
+		if i == 0 {
+			c.PassConfig.Diceware = 6
+		} else {
+			c.PassConfig.Diceware = i
+		}
+
+		fmt.Print("How many characters should Sillypass use to generate a password? [12]: ")
+		fmt.Scanf("%s", &s)
+		// Equals zero if there was an error, such as a user entering characters that couldn't be converted to an integer.
+		i, _ = strconv.Atoi(s)
+		if i == 0 {
+			c.PassConfig.Sillypass = 12
+		} else {
+			c.PassConfig.Sillypass = i
+		}
+
 		return
 	}
 }
@@ -334,14 +363,18 @@ func (c *Stymie) makeConfigFile() error {
 		return formatError(err)
 	}
 
-	b, err := json.Marshal(c.GPG)
+	gpgConfig, err := json.Marshal(c.GPG)
+	if err != nil {
+		return formatError(err)
+	}
 
+	passConfig, err := json.Marshal(c.PassConfig)
 	if err != nil {
 		return formatError(err)
 	}
 
 	// Stuff the gpgConfig into the json.
-	d := fmt.Sprintf("{ \"dir\": \"%s\", \"gpg\": %s, \"keys\": {} }", c.Dir, string(b))
+	d := fmt.Sprintf("{ \"dir\": \"%s\", \"passConfig\": %s, \"gpg\": %s, \"keys\": {} }", c.Dir, string(passConfig), string(gpgConfig))
 
 	f.Write(c.Encrypt([]byte(d)))
 

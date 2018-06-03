@@ -40,7 +40,7 @@ var editCmd = &cobra.Command{
 
 		if _, ok := stymie.Keys[keyname]; ok {
 			key := stymie.Keys[keyname]
-			stymie.Keys[keyname] = key.getUpdatedFields()
+			stymie.Keys[keyname] = key.getUpdatedFields(stymie.PassConfig)
 			stymie.PutFileContents()
 			fmt.Printf("\n[stymie] Updated key `%s`\n", keyname)
 		} else {
