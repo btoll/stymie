@@ -300,10 +300,10 @@ func (c *Stymie) getConfig() {
 		var s string
 		var i int
 
-		fmt.Print("Enter the full path of the directory to install .stymie.d [~/.stymie.d]: ")
+		fmt.Print("Enter the full path of the directory into which `stymie` will install .stymie.d [~]: ")
 		fmt.Scanf("%s", &s)
 		if s != "" {
-			c.Dir = s
+			c.Dir = s + "/.stymie.d"
 		}
 
 		for {
