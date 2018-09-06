@@ -153,7 +153,13 @@ func GetKeyFields(passConfig PassConfig) *Key {
 }
 
 func GetStymieDir() string {
-	return os.Getenv("HOME") + "/.stymie.d"
+	var path string
+
+	if path = os.Getenv("STYMIE"); path == "" {
+		path = os.Getenv("HOME")
+	}
+
+	return path + "/.stymie.d"
 }
 
 /* ----------------------------------------------------------- */
