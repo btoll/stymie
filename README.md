@@ -32,28 +32,34 @@ go get github.com/btoll/stymie-go
 ## Suggestions
 
 - Use `gpg-agent` to save typing.
+- Create a [ram disk], which doesn't use swap space and leaves no trace on the host system.
 
 ## Examples
 
+- Install `stymie`:
+
+        stymie init
+
+    - Installs to user's home directory by default.
+    - To install in multiple locations, specify different directories when installing and use the `STYMIE` environment variable to switch between installations:
+
+            STYMIE=/tmp/foo stymie get chomsky
+
 - Create the `example.com` key:
-```
-stymie add example.com
-```
+
+        stymie add example.com
 
 - Edit the `example.com` key:
-```
-stymie edit example.com
-```
+
+        stymie edit example.com
 
 - Get just the `username` field value from the `example.com` key:
-```
-stymie get example.com --field username
-```
+
+        stymie get example.com --field username
 
 - Get just the `password` field value from the `example.com` key and copy it to the system clipboard:
-```
-stymie get example.com --field password | xsel -b
-```
+
+        stymie get example.com --field password | xsel -b
 
 ## Usage
 
@@ -90,5 +96,6 @@ Benjamin Toll
 
 [Diceware]: https://github.com/btoll/diceware
 [Sillypass]: https://github.com/btoll/sillypass-go
+[ram disk]: https://wiki.debian.org/ramfs
 [js]: https://github.com/btoll/stymie
 
