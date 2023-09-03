@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/btoll/libstymie"
 	"github.com/spf13/cobra"
 )
 
@@ -38,7 +39,7 @@ var listCmd = &cobra.Command{
 	//This application is a tool to generate the needed files
 	//to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		stymie := &Stymie{}
+		stymie := libstymie.New()
 		if err := stymie.GetFileContents(); err != nil {
 			fmt.Print(err)
 			return

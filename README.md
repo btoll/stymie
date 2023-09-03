@@ -27,7 +27,7 @@ securityAnswer: '1st Avenue'
 
 ## Installation
 
-go get github.com/btoll/stymie-go
+go get github.com/btoll/stymie
 
 ## Suggestions
 
@@ -95,7 +95,7 @@ go get github.com/btoll/stymie-go
 Benjamin Toll
 
 [Diceware]: https://github.com/btoll/diceware
-[Sillypass]: https://github.com/btoll/sillypass-go
+[Sillypass]: https://github.com/btoll/sillypass
 [ram disk]: https://wiki.debian.org/ramfs
 [js]: https://github.com/btoll/stymie
 

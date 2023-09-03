@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/btoll/libstymie"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +33,7 @@ var getCmd = &cobra.Command{
 
 		keyname := args[0]
 
-		stymie := &Stymie{}
+		stymie := libstymie.New()
 		if err := stymie.GetFileContents(); err != nil {
 			fmt.Print(err)
 			return

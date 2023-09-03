@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/btoll/libstymie"
 	"github.com/spf13/cobra"
 )
 
@@ -38,7 +39,7 @@ var rmCmd = &cobra.Command{
 
 		toRemove := args[0]
 
-		stymie := &Stymie{}
+		stymie := libstymie.New()
 		if err := stymie.GetFileContents(); err != nil {
 			fmt.Print(err)
 			return
@@ -54,11 +55,15 @@ var rmCmd = &cobra.Command{
 			case "n":
 				fallthrough
 			case "N":
-				fmt.Println("[stymie] Operation aborted.")
-			default:
+				fmt.Println("[stymie] Key not deleted.")
+			case "y":
+				fallthrough
+			case "Y":
 				delete(stymie.Keys, toRemove)
 				stymie.PutFileContents()
 				fmt.Println("[stymie] Successfully removed key.")
+			default:
+				fmt.Println("[stymie] Key not deleted.")
 			}
 		} else {
 			fmt.Println("[stymie] Key doesn't exist, exiting.")

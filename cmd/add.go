@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/btoll/libstymie"
 	"github.com/spf13/cobra"
 )
 
@@ -36,7 +37,7 @@ var addCmd = &cobra.Command{
 			return
 		}
 
-		stymie := &Stymie{}
+		stymie := libstymie.New()
 		if err := stymie.GetFileContents(); err != nil {
 			fmt.Print(err)
 			return
@@ -46,7 +47,7 @@ var addCmd = &cobra.Command{
 
 		if _, ok := stymie.Keys[newkey]; !ok {
 			// Add the new key => struct.
-			stymie.Keys[newkey] = GetKeyFields(stymie.PassConfig)
+			stymie.Keys[newkey] = stymie.GetKeyFields()
 			stymie.PutFileContents()
 			fmt.Println("[stymie] Successfully created key.")
 		} else {

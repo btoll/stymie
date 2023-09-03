@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/btoll/libstymie"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +31,7 @@ var editCmd = &cobra.Command{
 			return
 		}
 
-		stymie := &Stymie{}
+		stymie := libstymie.New()
 		if err := stymie.GetFileContents(); err != nil {
 			fmt.Print(err)
 			return
@@ -40,7 +41,7 @@ var editCmd = &cobra.Command{
 
 		if _, ok := stymie.Keys[keyname]; ok {
 			key := stymie.Keys[keyname]
-			stymie.Keys[keyname] = key.getUpdatedFields(stymie.PassConfig)
+			stymie.Keys[keyname] = stymie.GetUpdatedFields(key)
 			stymie.PutFileContents()
 			fmt.Printf("\n[stymie] Updated key `%s`\n", keyname)
 		} else {

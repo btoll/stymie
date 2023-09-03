@@ -26,6 +26,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/btoll/libstymie"
 	"github.com/spf13/cobra"
 )
 
@@ -39,19 +40,15 @@ var initCmd = &cobra.Command{
 	//This application is a tool to generate the needed files
 	//to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		stymie := &Stymie{
-			Dir:  GetStymieDir(),
-			GPG:  &GPGConfig{},
-			Keys: nil, // TODO
-		}
+		stymie := libstymie.New()
 
-		stymie.getConfig()
+		stymie.SetConfig()
 
-		fmt.Printf("Creating project directory %s\n", stymie.Dir)
-		stymie.makeDir()
+		stymie.MakeDir()
+		fmt.Printf("Created project directory %s.\n", stymie.Dir)
 
-		fmt.Println("Creating stymie config file")
-		stymie.makeConfigFile()
+		stymie.MakeConfigFile()
+		fmt.Println("Created stymie config file.")
 
 		fmt.Println("Installation complete!")
 	},
