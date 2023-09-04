@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	"github.com/btoll/libstymie"
+	"github.com/btoll/stymie/plugin"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +34,7 @@ var hasCmd = &cobra.Command{
 
 		keyname := args[0]
 
-		stymie := libstymie.New()
+		stymie := libstymie.New(&plugin.GPG{})
 		if err := stymie.GetFileContents(); err != nil {
 			fmt.Print(err)
 			return

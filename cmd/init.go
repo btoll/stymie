@@ -25,31 +25,26 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/btoll/libstymie"
+	"github.com/btoll/stymie/plugin"
 	"github.com/spf13/cobra"
 )
 
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initializes the `stymie` database",
-	//	Long: `A longer description that spans multiple lines and likely contains examples
-	//and usage of using your command. For example:
-	//
-	//Cobra is a CLI library for Go that empowers applications.
-	//This application is a tool to generate the needed files
-	//to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		stymie := libstymie.New()
+		stymie := libstymie.New(&plugin.GPG{})
+		err := stymie.Init()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err)
+			os.Exit(1)
+		}
 
-		stymie.SetConfig()
-
-		stymie.MakeDir()
-		fmt.Printf("Created project directory %s.\n", stymie.Dir)
-
-		stymie.MakeConfigFile()
-		fmt.Println("Created stymie config file.")
-
+		//fmt.Printf("Created project directory %s.\n", stymie.Dir)
+		//fmt.Println("Created stymie config file.")
 		fmt.Println("Installation complete!")
 	},
 }

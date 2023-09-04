@@ -3,15 +3,15 @@ module github.com/btoll/stymie
 go 1.21.0
 
 require (
-	github.com/btoll/diceware v0.0.0-20230828010232-2c1f586942df
-	github.com/btoll/libstymie v0.0.0-20230903221502-dcb00815fb64
+	github.com/btoll/diceware v0.0.0-20230901070742-3113761c9ce0
+	github.com/btoll/libstymie v0.0.0-20230904194318-4b422a55596e
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
 )
 
 require (
-	github.com/btoll/sillypass v0.0.0-20230901063829-f6b4366ce724 // indirect
+	github.com/btoll/sillypass v0.0.0-20230901163051-cedd4ae6a448 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect

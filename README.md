@@ -82,9 +82,19 @@ go get github.com/btoll/stymie
     --shadow | Obfuscates a password entry
     -h, --help | Display help
 
-## Ports
+## Debugging
 
-- [JavaScript][js]
+Add `libstymie` locally:
+
+```bash
+$ sed -i 's_\(github.com/btoll\)/libstymie_\1/stymie/libstymie_' cdm/*.go
+```
+
+Revert:
+
+```bash
+$ sed -i 's_\(github.com/btoll\)/stymie/libstymie_\1/libstymie_' cmd/*.go
+```
 
 ## License
 

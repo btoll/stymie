@@ -19,25 +19,20 @@ import (
 	"fmt"
 
 	"github.com/btoll/libstymie"
+	"github.com/btoll/stymie/plugin"
 	"github.com/spf13/cobra"
 )
 
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new key",
-	//	Long: `A longer description that spans multiple lines and likely contains examples
-	//and usage of using your command. For example:
-	//
-	//Cobra is a CLI library for Go that empowers applications.
-	//This application is a tool to generate the needed files
-	//to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("[stymie] No key name provided, aborting.")
 			return
 		}
 
-		stymie := libstymie.New()
+		stymie := libstymie.New(&plugin.GPG{})
 		if err := stymie.GetFileContents(); err != nil {
 			fmt.Print(err)
 			return
