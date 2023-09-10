@@ -28,14 +28,12 @@ var editCmd = &cobra.Command{
 	Short: "Edit a key",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			fmt.Println("[stymie] No key name provided, aborting.")
-			return
+			exit("No key name provided, aborting.")
 		}
 
 		stymie := libstymie.New(&plugin.GPG{})
 		if err := stymie.GetFileContents(); err != nil {
-			fmt.Print(err)
-			return
+			exit(fmt.Sprintf("%s", err))
 		}
 
 		keyname := args[0]
@@ -43,10 +41,13 @@ var editCmd = &cobra.Command{
 		if _, ok := stymie.Keys[keyname]; ok {
 			key := stymie.Keys[keyname]
 			stymie.Keys[keyname] = stymie.GetUpdatedFields(key)
-			stymie.PutFileContents()
+			err := stymie.PutFileContents()
+			if err != nil {
+				exit(fmt.Sprintf("%s", err))
+			}
 			fmt.Printf("\n[stymie] Updated key `%s`\n", keyname)
 		} else {
-			fmt.Println("[stymie] Key doesn't exist, exiting.")
+			exit("Key doesn't exist, exiting.")
 		}
 	},
 }

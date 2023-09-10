@@ -25,7 +25,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/btoll/libstymie"
 	"github.com/btoll/stymie/plugin"
@@ -39,8 +38,7 @@ var initCmd = &cobra.Command{
 		stymie := libstymie.New(&plugin.GPG{})
 		err := stymie.Init()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err)
-			os.Exit(1)
+			exit(fmt.Sprintf("%s", err))
 		}
 
 		//fmt.Printf("Created project directory %s.\n", stymie.Dir)

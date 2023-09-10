@@ -37,9 +37,13 @@ var RootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		exit(fmt.Sprintf("%s", err))
 	}
+}
+
+func exit(s string) {
+	fmt.Fprintf(os.Stderr, "[stymie] %s\n", s)
+	os.Exit(1)
 }
 
 func init() {
@@ -55,8 +59,7 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			exit(fmt.Sprintf("%s", err))
 		}
 
 		// Search config in home directory with name ".stymie" (without extension).

@@ -28,16 +28,14 @@ var getCmd = &cobra.Command{
 	Short: "Get the fields of the given key",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			fmt.Println("[stymie] No key name provided, aborting.")
-			return
+			exit("No key name provided, aborting.")
 		}
 
 		keyname := args[0]
 
 		stymie := libstymie.New(&plugin.GPG{})
 		if err := stymie.GetFileContents(); err != nil {
-			fmt.Print(err)
-			return
+			exit(fmt.Sprintf("%s", err))
 		}
 
 		if _, ok := stymie.Keys[keyname]; ok {
@@ -47,7 +45,7 @@ var getCmd = &cobra.Command{
 				fmt.Printf("%s: %s\n", key, value)
 			}
 		} else {
-			fmt.Println("[stymie] Key doesn't exist, exiting.")
+			exit("Key doesn't exist, exiting.")
 		}
 	},
 }

@@ -28,16 +28,15 @@ var rmCmd = &cobra.Command{
 	Short: "Delete a key",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			fmt.Println("[stymie] No key name provided, aborting.")
-			return
+			exit("No key name provided, aborting.")
 		}
 
 		toRemove := args[0]
 
 		stymie := libstymie.New(&plugin.GPG{})
-		if err := stymie.GetFileContents(); err != nil {
-			fmt.Print(err)
-			return
+		err := stymie.GetFileContents()
+		if err != nil {
+			exit(fmt.Sprintf("%s", err))
 		}
 
 		if _, ok := stymie.Keys[toRemove]; ok {
@@ -55,7 +54,10 @@ var rmCmd = &cobra.Command{
 				fallthrough
 			case "Y":
 				delete(stymie.Keys, toRemove)
-				stymie.PutFileContents()
+				err := stymie.PutFileContents()
+				if err != nil {
+					exit(fmt.Sprintf("%s", err))
+				}
 				fmt.Println("[stymie] Successfully removed key.")
 			default:
 				fmt.Println("[stymie] Key not deleted.")

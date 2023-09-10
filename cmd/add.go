@@ -28,14 +28,12 @@ var addCmd = &cobra.Command{
 	Short: "Add a new key",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			fmt.Println("[stymie] No key name provided, aborting.")
-			return
+			exit("No key name provided, aborting.")
 		}
 
 		stymie := libstymie.New(&plugin.GPG{})
 		if err := stymie.GetFileContents(); err != nil {
-			fmt.Print(err)
-			return
+			exit(fmt.Sprintf("%s", err))
 		}
 
 		newkey := args[0]
@@ -43,10 +41,13 @@ var addCmd = &cobra.Command{
 		if _, ok := stymie.Keys[newkey]; !ok {
 			// Add the new key => struct.
 			stymie.Keys[newkey] = stymie.GetKeyFields()
-			stymie.PutFileContents()
+			err := stymie.PutFileContents()
+			if err != nil {
+				exit(fmt.Sprintf("%s", err))
+			}
 			fmt.Println("[stymie] Successfully created key.")
 		} else {
-			fmt.Println("[stymie] Key already exists, exiting.")
+			exit("Key already exists, exiting.")
 		}
 	},
 }

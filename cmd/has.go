@@ -28,16 +28,14 @@ var hasCmd = &cobra.Command{
 	Short: "Returns `true` if the key exists, `false` otherwise",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			fmt.Println("[stymie] No key name provided, aborting.")
-			return
+			exit("No key name provided, aborting.")
 		}
 
 		keyname := args[0]
 
 		stymie := libstymie.New(&plugin.GPG{})
 		if err := stymie.GetFileContents(); err != nil {
-			fmt.Print(err)
-			return
+			exit(fmt.Sprintf("%s", err))
 		}
 
 		fmt.Printf("%t\n", stymie.Keys[keyname] != nil)
