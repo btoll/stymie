@@ -18,8 +18,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/btoll/libstymie"
-	"github.com/btoll/stymie/plugin"
+	"github.com/btoll/stymie/libstymie"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +30,8 @@ var addCmd = &cobra.Command{
 			exit("No key name provided, aborting.")
 		}
 
-		stymie := libstymie.New(&plugin.GPG{})
+		//		stymie := libstymie.New(&plugin.GPG{})
+		stymie := libstymie.Stymie{}
 		if err := stymie.GetFileContents(); err != nil {
 			exit(fmt.Sprintf("%s", err))
 		}

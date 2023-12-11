@@ -25,8 +25,11 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
+	"strconv"
 
-	"github.com/btoll/libstymie"
+	"github.com/btoll/stymie/libstymie"
 	"github.com/btoll/stymie/plugin"
 	"github.com/spf13/cobra"
 )
@@ -35,8 +38,33 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initializes the `stymie` database",
 	Run: func(cmd *cobra.Command, args []string) {
-		stymie := libstymie.New(&plugin.GPG{})
-		err := stymie.Init()
+		files, err := ioutil.ReadDir("./plugin")
+		if err != nil {
+			exit(fmt.Sprintf("%s", err))
+		}
+		var pluginNames []string
+		fmt.Println("Please choose a plugin:")
+		for _, file := range files {
+			f := file.Name()
+			pname := f[:len(f)-len(filepath.Ext(f))]
+			if pname != "plugin" {
+				fmt.Printf("\t(%d) %s\n", len(pluginNames)+1, pname)
+				pluginNames = append(pluginNames, pname)
+			}
+		}
+		var str string
+		fmt.Print("Select: ")
+		fmt.Scanf("%s", &str)
+		num, err := strconv.Atoi(str)
+		// Adjust for zero-based.
+		num -= 1
+		if err != nil || num < 0 || num >= len(pluginNames) {
+			exit("You must make a valid selection.")
+		}
+		pluginChoice := pluginNames[num]
+		fmt.Printf("Installing the %s plugin.\n", pluginChoice)
+		stymie := libstymie.New(plugin.New(pluginChoice))
+		err = stymie.Init()
 		if err != nil {
 			exit(fmt.Sprintf("%s", err))
 		}

@@ -2,7 +2,7 @@ CC      	= go
 PROGRAM		= stymie
 prefix		= /usr
 
-.PHONY: build clean distclean install uninstall
+.PHONY: build clean distclean goclean install uninstall
 
 build: $(PROGRAM)
 
@@ -13,6 +13,9 @@ clean:
 	rm -f $(PROGRAM)
 
 distclean: clean
+
+goclean:
+	$(CC) clean -cache -modcache
 
 # https://www.gnu.org/software/make/manual/html_node/DESTDIR.html
 install:

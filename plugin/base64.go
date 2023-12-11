@@ -13,35 +13,27 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-package cmd
+package plugin
 
 import (
-	"fmt"
-
-	"github.com/btoll/stymie/libstymie"
-	"github.com/btoll/stymie/plugin"
-	"github.com/spf13/cobra"
+	"encoding/base64"
 )
 
-var hasCmd = &cobra.Command{
-	Use:   "has",
-	Short: "Returns `true` if the key exists, `false` otherwise",
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			exit("No key name provided, aborting.")
-		}
-
-		keyname := args[0]
-
-		stymie := libstymie.New(&plugin.GPG{})
-		if err := stymie.GetFileContents(); err != nil {
-			exit(fmt.Sprintf("%s", err))
-		}
-
-		fmt.Printf("%t\n", stymie.Keys[keyname] != nil)
-	},
+type Base64 struct {
+	Name string `json:"name,noempty"`
 }
 
-func init() {
-	RootCmd.AddCommand(hasCmd)
+func (b *Base64) Configure() error {
+	b.Name = "base64"
+	return nil
+}
+
+func (b *Base64) Decrypt(chars []byte) ([]byte, error) {
+	return base64.StdEncoding.DecodeString(string(chars))
+}
+
+func (b *Base64) Encrypt(chars []byte) ([]byte, error) {
+	dst := make([]byte, base64.StdEncoding.EncodedLen(len(chars)))
+	base64.StdEncoding.Encode(dst, chars)
+	return dst, nil
 }

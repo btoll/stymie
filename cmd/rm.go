@@ -18,7 +18,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/btoll/libstymie"
+	"github.com/btoll/stymie/libstymie"
 	"github.com/btoll/stymie/plugin"
 	"github.com/spf13/cobra"
 )

@@ -25,12 +25,15 @@ import (
 
 // https://talks.golang.org/2012/10things.slide#4
 type GPG struct {
-	Armor     bool   `json:"armor"`
-	Sign      bool   `json:"sign"`
-	Recipient string `json:"recipient"`
+	Name      string `json:"name,noempty"`
+	Armor     bool   `json:"armor,noempty"`
+	Sign      bool   `json:"sign,noempty"`
+	Recipient string `json:"recipient,noempty"`
 }
 
 func (g *GPG) Configure() error {
+	g.Name = "gpg"
+
 	var s string
 	fmt.Print("Enter the email address or key ID of your public key: ")
 	if _, err := fmt.Scanf("%s", &s); err != nil {

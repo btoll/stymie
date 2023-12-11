@@ -87,7 +87,7 @@ go get github.com/btoll/stymie
 Add `libstymie` locally:
 
 ```bash
-$ sed -i 's_\(github.com/btoll\)/libstymie_\1/stymie/libstymie_' cdm/*.go
+$ sed -i 's_\(github.com/btoll\)/libstymie_\1/stymie/libstymie_' cmd/*.go
 ```
 
 Revert:

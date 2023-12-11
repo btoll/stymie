@@ -13,35 +13,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-package cmd
+package plugin
 
-import (
-	"fmt"
-
-	"github.com/btoll/stymie/libstymie"
-	"github.com/btoll/stymie/plugin"
-	"github.com/spf13/cobra"
-)
-
-var hasCmd = &cobra.Command{
-	Use:   "has",
-	Short: "Returns `true` if the key exists, `false` otherwise",
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			exit("No key name provided, aborting.")
-		}
-
-		keyname := args[0]
-
-		stymie := libstymie.New(&plugin.GPG{})
-		if err := stymie.GetFileContents(); err != nil {
-			exit(fmt.Sprintf("%s", err))
-		}
-
-		fmt.Printf("%t\n", stymie.Keys[keyname] != nil)
-	},
+type Plaintext struct {
+	Name string `json:"name,noempty"`
 }
 
-func init() {
-	RootCmd.AddCommand(hasCmd)
+func (p *Plaintext) Configure() error {
+	p.Name = "plaintext"
+	return nil
+}
+
+func (p *Plaintext) Decrypt(b []byte) ([]byte, error) {
+	return b, nil
+}
+
+func (p *Plaintext) Encrypt(b []byte) ([]byte, error) {
+	return b, nil
 }
