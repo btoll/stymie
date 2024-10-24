@@ -1,4 +1,4 @@
-// Copyright © 2017 Benjamin Toll <ben@benjamintoll.com>
+// Copyright © 2024 Benjamin Toll <ben@benjamintoll.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -86,6 +86,10 @@ func (g *GPG) Encrypt(b []byte) ([]byte, error) {
 
 	return spawnGPG(cmd, b)
 }
+
+//func (g GPG) GetPlugin() (Encrypter, error) {
+//	return nil, nil
+//}
 
 func spawnGPG(cmd string, b []byte) ([]byte, error) {
 	gpgCmd := exec.Command("bash", "-c", cmd)

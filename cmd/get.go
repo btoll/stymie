@@ -1,4 +1,4 @@
-// Copyright © 2017 Benjamin Toll <ben@benjamintoll.com>
+// Copyright © 2024 Benjamin Toll <ben@benjamintoll.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 
-	"github.com/btoll/stymie/libstymie"
-	"github.com/btoll/stymie/plugin"
+	"github.com/btoll/stymie/stymie"
 	"github.com/spf13/cobra"
 )
 
@@ -30,18 +30,19 @@ var getCmd = &cobra.Command{
 		if len(args) == 0 {
 			exit("No key name provided, aborting.")
 		}
-
 		keyname := args[0]
-
-		stymie := libstymie.New(&plugin.GPG{})
-		if err := stymie.GetFileContents(); err != nil {
+		s, err := stymie.GetStymie()
+		if err != nil {
 			exit(fmt.Sprintf("%s", err))
 		}
-
-		if _, ok := stymie.Keys[keyname]; ok {
+		decryptedKeys := stymie.Keys{}
+		err = json.Unmarshal(s.Keys, &decryptedKeys)
+		if err != nil {
+			exit(fmt.Sprintf("%s", err))
+		}
+		if _, ok := decryptedKeys[keyname]; ok {
 			fmt.Printf("[stymie] Printing key `%s`\n\n", keyname)
-
-			for key, value := range stymie.Keys[keyname].Fields {
+			for key, value := range decryptedKeys[keyname].Fields {
 				fmt.Printf("%s: %s\n", key, value)
 			}
 		} else {

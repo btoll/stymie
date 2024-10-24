@@ -84,16 +84,16 @@ go get github.com/btoll/stymie
 
 ## Debugging
 
-Add `libstymie` locally:
+Add `stymie` locally:
 
 ```bash
-$ sed -i 's_\(github.com/btoll\)/libstymie_\1/stymie/libstymie_' cmd/*.go
+$ sed -i 's_\(github.com/btoll\)/stymie_\1/stymie/stymie_' cmd/*.go
 ```
 
 Revert:
 
 ```bash
-$ sed -i 's_\(github.com/btoll\)/stymie/libstymie_\1/libstymie_' cmd/*.go
+$ sed -i 's_\(github.com/btoll\)/stymie/stymie_\1/stymie_' cmd/*.go
 ```
 
 ## License

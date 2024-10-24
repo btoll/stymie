@@ -1,4 +1,4 @@
-// Copyright © 2017 Benjamin Toll <ben@benjamintoll.com>
+// Copyright © 2024 Benjamin Toll <ben@benjamintoll.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ TODO
 - 'export HISTIGNORE="stymie *:$HISTIGNORE"\n'
 - allow .stymie.d to be installed anywhere and even change the name
 - if not accepting default stymie location, get full pathname to put in Dir field
-- remove .stymie.d dir on error
+- remove .stymie.d dir on error (when initializing)
 */
 
 package cmd
@@ -29,8 +29,8 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/btoll/stymie/libstymie"
 	"github.com/btoll/stymie/plugin"
+	"github.com/btoll/stymie/stymie"
 	"github.com/spf13/cobra"
 )
 
@@ -63,12 +63,13 @@ var initCmd = &cobra.Command{
 		}
 		pluginChoice := pluginNames[num]
 		fmt.Printf("Installing the %s plugin.\n", pluginChoice)
-		stymie := libstymie.New(plugin.New(pluginChoice))
+		stymie := stymie.New(plugin.New(pluginChoice))
+		//		plugin.New(pluginChoice)
+		//		return
 		err = stymie.Init()
 		if err != nil {
 			exit(fmt.Sprintf("%s", err))
 		}
-
 		//fmt.Printf("Created project directory %s.\n", stymie.Dir)
 		//fmt.Println("Created stymie config file.")
 		fmt.Println("Installation complete!")

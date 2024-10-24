@@ -1,4 +1,4 @@
-// Copyright © 2017 Benjamin Toll <ben@benjamintoll.com>
+// Copyright © 2024 Benjamin Toll <ben@benjamintoll.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,3 +31,7 @@ func (p *Plaintext) Decrypt(b []byte) ([]byte, error) {
 func (p *Plaintext) Encrypt(b []byte) ([]byte, error) {
 	return b, nil
 }
+
+//func (p *Plaintext) GetPlugin() (Encrypter, error) {
+//	return nil, nil
+//}

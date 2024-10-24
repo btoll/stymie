@@ -1,4 +1,4 @@
-// Copyright © 2017 Benjamin Toll <ben@benjamintoll.com>
+// Copyright © 2024 Benjamin Toll <ben@benjamintoll.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 
-	"github.com/btoll/stymie/libstymie"
-	"github.com/btoll/stymie/plugin"
+	"github.com/btoll/stymie/stymie"
 	"github.com/spf13/cobra"
 )
 
@@ -30,20 +30,21 @@ var rmCmd = &cobra.Command{
 		if len(args) == 0 {
 			exit("No key name provided, aborting.")
 		}
-
 		toRemove := args[0]
-
-		stymie := libstymie.New(&plugin.GPG{})
-		err := stymie.GetFileContents()
+		s, err := stymie.GetStymie()
 		if err != nil {
 			exit(fmt.Sprintf("%s", err))
 		}
-
-		if _, ok := stymie.Keys[toRemove]; ok {
-			var s string
+		decryptedKeys := stymie.Keys{}
+		err = json.Unmarshal(s.Keys, &decryptedKeys)
+		if err != nil {
+			exit(fmt.Sprintf("%s", err))
+		}
+		if _, ok := decryptedKeys[toRemove]; ok {
+			var choice string
 			fmt.Print("Are you sure you wish to delete the key [y/N]: ")
-			fmt.Scanf("%s", &s)
-			switch s {
+			fmt.Scanf("%s", &choice)
+			switch choice {
 			case "":
 				fallthrough
 			case "n":
@@ -53,8 +54,17 @@ var rmCmd = &cobra.Command{
 			case "y":
 				fallthrough
 			case "Y":
-				delete(stymie.Keys, toRemove)
-				err := stymie.PutFileContents()
+				delete(decryptedKeys, toRemove)
+				keys, err := json.Marshal(decryptedKeys)
+				if err != nil {
+					exit(fmt.Sprintf("%s", err))
+				}
+				encryptedKeys, err := s.Encrypt(keys)
+				if err != nil {
+					exit(fmt.Sprintf("%s", err))
+				}
+				s.Keys = encryptedKeys
+				err = s.PutFileContents()
 				if err != nil {
 					exit(fmt.Sprintf("%s", err))
 				}

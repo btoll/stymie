@@ -1,4 +1,4 @@
-// Copyright © 2017 Benjamin Toll <ben@benjamintoll.com>
+// Copyright © 2024 Benjamin Toll <ben@benjamintoll.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 
-	"github.com/btoll/stymie/libstymie"
-	"github.com/btoll/stymie/plugin"
+	"github.com/btoll/stymie/stymie"
 	"github.com/spf13/cobra"
 )
 
@@ -30,18 +30,29 @@ var editCmd = &cobra.Command{
 		if len(args) == 0 {
 			exit("No key name provided, aborting.")
 		}
-
-		stymie := libstymie.New(&plugin.GPG{})
-		if err := stymie.GetFileContents(); err != nil {
+		s, err := stymie.GetStymie()
+		if err != nil {
 			exit(fmt.Sprintf("%s", err))
 		}
-
+		decryptedKeys := stymie.Keys{}
+		err = json.Unmarshal(s.Keys, &decryptedKeys)
+		if err != nil {
+			exit(fmt.Sprintf("%s", err))
+		}
 		keyname := args[0]
-
-		if _, ok := stymie.Keys[keyname]; ok {
-			key := stymie.Keys[keyname]
-			stymie.Keys[keyname] = stymie.GetUpdatedFields(key)
-			err := stymie.PutFileContents()
+		if _, ok := decryptedKeys[keyname]; ok {
+			key := decryptedKeys[keyname]
+			decryptedKeys[keyname] = s.GetUpdatedFields(key)
+			keys, err := json.Marshal(decryptedKeys)
+			if err != nil {
+				exit(fmt.Sprintf("%s", err))
+			}
+			encryptedKeys, err := s.Encrypt(keys)
+			if err != nil {
+				exit(fmt.Sprintf("%s", err))
+			}
+			s.Keys = encryptedKeys
+			err = s.PutFileContents()
 			if err != nil {
 				exit(fmt.Sprintf("%s", err))
 			}
