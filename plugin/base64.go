@@ -23,21 +23,17 @@ type Base64 struct {
 	Name string `json:"name,noempty"`
 }
 
-func (b Base64) Configure() error {
+func (b *Base64) Configure() error {
 	b.Name = "base64"
 	return nil
 }
 
-func (b Base64) Decrypt(chars []byte) ([]byte, error) {
+func (b *Base64) Decrypt(chars []byte) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(string(chars))
 }
 
-func (b Base64) Encrypt(chars []byte) ([]byte, error) {
+func (b *Base64) Encrypt(chars []byte) ([]byte, error) {
 	dst := make([]byte, base64.StdEncoding.EncodedLen(len(chars)))
 	base64.StdEncoding.Encode(dst, chars)
 	return dst, nil
 }
-
-//func (b Base64) GetPlugin(v string) (Encrypter, error) {
-//	return nil, nil
-//}

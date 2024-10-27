@@ -13,85 +13,30 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+// https://stackoverflow.com/questions/70394814/create-new-object-of-typed-value-via-go-go-1-18-generics
+// https://gotipplay.golang.org/p/IJErmO1mrJh
+
 package plugin
 
-import "fmt"
-
-type Encrypter interface {
-	Base64 | GPG | Plaintext
+type Plugin interface {
+	*Base64 | *GPG | *Plaintext
 	Configure() error
-	//	GetPlugin(v string) (Encrypter, error)
 	Encrypt([]byte) ([]byte, error)
 	Decrypt([]byte) ([]byte, error)
 }
 
-type Plugin[T Encrypter] struct {
-	Encrypter T
+type Factory[T any] struct{}
+
+func (f Factory[T]) Create() *T {
+	var a T
+	return &a
 }
 
-func (p *Plugin[T]) f() *Plugin[T] {
-	fmt.Printf("%+v\n", p)
-	//	fmt.Println(p.Encrypter.Name)
-	return p
-}
-
-func New(s string) *GPG {
-	//func New[T Encrypter](s string) T {
-	//	var plugin T
-	switch s {
-	//	case "base64":
-	//		p := Plugin[Base64]{
-	//			Encrypter: Base64{
-	//				Name: "base64",
-	//			},
-	//		}
-	//		return p
-	case "gpg":
-		return &GPG{}
-
-		//		plugin = Plugin[GPG]{
-		//			Encrypter: GPG{
-		//				Name: "gpg",
-		//			},
-		//		}
-		//		return plugin
-		//	case "plaintext":
-		//		p := Plugin[Plaintext]{
-		//			Encrypter: Plaintext{
-		//				Name: "plaintext",
-		//			},
-		//		}
-		//		return p
-		//	default:
-		//		return nil
-	default:
-		return nil
-	}
-}
-
-//func Configure[E Encrypter](E) error {
-//	return e.Configure()
-//}
-
-//func GetPlugin[E Encrypter](E) (Encrypter, error) {
-//	_, err := stymie.GetConfigFileContents()
+//func New[T Plugin](b []byte) T {
+//	t := new(T)
+//	err := json.Unmarshal(b, t)
 //	if err != nil {
-//		return nil, err
+//		log.Fatal(err)
 //	}
-// Fill the `stymie` struct with the decrypted json.
-//	err = json.Unmarshal(b, s)
-//	fmt.Println("s", s)
-//	if err != nil {
-//		return nil, formatError(err)
-//	}
-
-//	return nil, nil
-//}
-
-//func Decrypt(b []byte) ([]byte, error) {
-//	return e.Decrypt(b)
-//}
-//
-//func Encrypt(b []byte) ([]byte, error) {
-//	return e.Encrypt(b)
+//	return *t
 //}

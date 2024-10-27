@@ -63,15 +63,13 @@ var initCmd = &cobra.Command{
 		}
 		pluginChoice := pluginNames[num]
 		fmt.Printf("Installing the %s plugin.\n", pluginChoice)
-		stymie := stymie.New(plugin.New(pluginChoice))
-		//		plugin.New(pluginChoice)
-		//		return
+		pluginFactory := plugin.Factory[plugin.GPG]{}
+		p := pluginFactory.Create()
+		stymie := stymie.New[*plugin.GPG](p)
 		err = stymie.Init()
 		if err != nil {
 			exit(fmt.Sprintf("%s", err))
 		}
-		//fmt.Printf("Created project directory %s.\n", stymie.Dir)
-		//fmt.Println("Created stymie config file.")
 		fmt.Println("Installation complete!")
 	},
 }

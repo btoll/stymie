@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/btoll/stymie/plugin"
 	"github.com/btoll/stymie/stymie"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +31,7 @@ var addCmd = &cobra.Command{
 		if len(args) == 0 {
 			exit("No key name provided, aborting.")
 		}
-		s, err := stymie.GetStymie()
+		s, err := stymie.GetStymie[*plugin.GPG]()
 		if err != nil {
 			exit(fmt.Sprintf("%s", err))
 		}

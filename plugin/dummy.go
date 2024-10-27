@@ -15,19 +15,19 @@
 
 package plugin
 
-type Plaintext struct {
+type Dummy struct {
 	Name string `json:"name,noempty"`
 }
 
-func (p *Plaintext) Configure() error {
-	p.Name = "plaintext"
+func (d *Dummy) Configure() error {
+	d.Name = "dummy"
 	return nil
 }
 
-func (p *Plaintext) Decrypt(b []byte) ([]byte, error) {
+func (d *Dummy) Decrypt(b []byte) ([]byte, error) {
 	return b, nil
 }
 
-func (p *Plaintext) Encrypt(b []byte) ([]byte, error) {
+func (d *Dummy) Encrypt(b []byte) ([]byte, error) {
 	return b, nil
 }

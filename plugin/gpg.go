@@ -72,24 +72,15 @@ func (g *GPG) Decrypt(b []byte) ([]byte, error) {
 
 func (g *GPG) Encrypt(b []byte) ([]byte, error) {
 	args := []string{"-r", g.Recipient}
-
 	if g.Armor {
 		args = append(args, "-a")
 	}
-
 	if g.Sign {
 		args = append(args, "-s")
 	}
-
 	cmd := fmt.Sprintf("gpg %s -e", strings.Join(args, " "))
-	//	fmt.Println("cmd", cmd)
-
 	return spawnGPG(cmd, b)
 }
-
-//func (g GPG) GetPlugin() (Encrypter, error) {
-//	return nil, nil
-//}
 
 func spawnGPG(cmd string, b []byte) ([]byte, error) {
 	gpgCmd := exec.Command("bash", "-c", cmd)

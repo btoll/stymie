@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/btoll/stymie/plugin"
 	"github.com/btoll/stymie/stymie"
 	"github.com/spf13/cobra"
 )
@@ -44,7 +45,13 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all saved keys",
 	Run: func(cmd *cobra.Command, args []string) {
-		s, err := stymie.GetStymie()
+		//		s, err := stymie.GetStymie[*plugin.GPG]()
+		//		w := "gpg"
+		//		var pl plugin.Plugin
+		//		if w == "gpg" {
+		//			pl = plugin.GPG
+		//		}
+		s, err := stymie.GetStymie[*plugin.GPG]()
 		if err != nil {
 			exit(fmt.Sprintf("%s", err))
 		}
